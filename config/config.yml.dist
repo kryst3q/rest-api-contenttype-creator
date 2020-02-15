@@ -1,0 +1,16 @@
+api_prefix: '/api'
+email_configuration:
+    host: localhost
+    port: 25
+    security: null # possible values: null, ssl, ttl
+    username: null
+    password: null
+sender:
+    name: Dolor Sit
+    email: dolor@sit.com
+receiver:
+    name: Lorem Ipsum
+    email: lorem@ipsum.com
+message:
+    subject: New contact form
+    template: null

@@ -1,0 +1,21 @@
+contact_forms:
+    name: Formularze kontaktowe
+    singular_name: Formularz kontaktowy
+    fields:
+        name:
+            label: Imię i nazwisko
+            type: text
+            readonly: true
+            group: main
+        email:
+            label: Adres email
+            type: text
+            readonly: true
+            group: main
+        message:
+            label: Wiadomość
+            type: text
+            readonly: true
+            group: main
+#    icon_many: "fa:"
+#    icon_one: "fa:"

@@ -1,5 +1,5 @@
 {
-    "name": "bolt/rest-api-contact-form",
+    "name": "kryst3q/rest-api-contact-form",
     "description": "",
     "type": "bolt-extension",
     "keywords": [
@@ -22,7 +22,6 @@
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "version": "0.1.0",
     "autoload": {
         "psr-4": {
             "Bolt\\Extension\\Kryst3q\\RestApiContactForm\\": "src"
