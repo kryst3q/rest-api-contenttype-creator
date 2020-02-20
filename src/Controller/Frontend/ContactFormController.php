@@ -2,8 +2,10 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend;
 
+use Bolt\Exception\InvalidRepositoryException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentSaveException;
 use Bolt\Storage\Entity\Content;
 use Silex\Application;
 use Silex\ControllerCollection;
@@ -13,6 +15,24 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ContactFormController implements ControllerProviderInterface
 {
+    /**
+     * @var RequestDataTransformer
+     */
+    private $requestDataTransformer;
+
+    /**
+     * @var IncomingContentTypeFormAction
+     */
+    private $incomingContentTypeFormAction;
+
+    public function __construct(
+        RequestDataTransformer $requestDataTransformer,
+        IncomingContentTypeFormAction $incomingContentTypeFormAction
+    ) {
+        $this->requestDataTransformer = $requestDataTransformer;
+        $this->incomingContentTypeFormAction = $incomingContentTypeFormAction;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -25,7 +45,7 @@ class ContactFormController implements ControllerProviderInterface
 
         $controllerCollection
             ->post('/create/{contentType}', [$this, 'processIncomingContactForm'])
-            ->convert('content', [$app[RequestDataTransformer::class], 'transform']);
+            ->convert('content', [$this->requestDataTransformer, 'transform']);
 
         return $controllerCollection;
     }
@@ -36,9 +56,15 @@ class ContactFormController implements ControllerProviderInterface
      * @param string $contentType
      * @param Content $content
      * @return JsonResponse
+     * @throws InvalidRepositoryException
+     * @throws UnsuccessfulContentSaveException
      */
-    public function processIncomingContactForm(Application $app, Request $request, $contentType, Content $content)
-    {
-        return $app[IncomingContentTypeFormAction::class]->handle($content);
+    public function processIncomingContactForm(
+        Application $app,
+       Request $request,
+       $contentType,
+       Content $content
+    ) {
+        return $this->incomingContentTypeFormAction->handle($content);
     }
 }
