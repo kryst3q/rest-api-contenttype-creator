@@ -111,6 +111,9 @@ class ServiceProvider implements ServiceProviderInterface
             $emailConfig->getPort(),
             $emailConfig->getSecurity()
         );
+        $transport->setUsername($emailConfig->getUsername());
+        $transport->setPassword($emailConfig->getPassword());
+
         $app[Mailer::class] = $app->share(
             function ($app) use ($transport) {
                 return new Mailer($app[Config::class], $transport);

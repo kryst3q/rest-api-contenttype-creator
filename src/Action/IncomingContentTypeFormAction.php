@@ -58,6 +58,7 @@ class IncomingContentTypeFormAction
         if ($contentType->hasToSendEmail()) {
             $messageChunks = $this->getMessageChunks($content, $contentType);
             $message = $this->prepareMessage($messageChunks, $contentType);
+
             /*
              * TODO: add queueing messages and send them by cron task
              */
@@ -65,7 +66,6 @@ class IncomingContentTypeFormAction
 
             if ($success) {
                 $content->setStatus('published');
-                $repository->update($content);
             }
 
             /*
@@ -119,7 +119,7 @@ class IncomingContentTypeFormAction
     {
         $messageChunks = [];
 
-        foreach (array_keys($contentType->getFieldsNames()) as $fieldName) {
+        foreach ($contentType->getFieldsNames() as $fieldName) {
             if (in_array($fieldName, $contentType->getMessageFieldsNames())) {
                 $messageChunks[] = $content->get($fieldName);
             }
