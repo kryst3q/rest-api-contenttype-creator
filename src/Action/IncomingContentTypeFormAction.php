@@ -59,27 +59,14 @@ class IncomingContentTypeFormAction
             $messageChunks = $this->getMessageChunks($content, $contentType);
             $message = $this->prepareMessage($messageChunks, $contentType);
 
-            /*
-             * TODO: add queueing messages and send them by cron task
-             */
             $success = $this->sendEmailWithContactMessage($message);
 
             if ($success) {
                 $content->setStatus('published');
             }
-
-            /*
-             * TODO: handle case when email was not sent
-             */
-//        if (!$success) {
-//
-//        }
         }
 
-        /*
-         * TODO: add translations
-         */
-        return new JsonResponse(['message' => 'Dziękujemy za kontakt!'], Response::HTTP_OK);
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     /**

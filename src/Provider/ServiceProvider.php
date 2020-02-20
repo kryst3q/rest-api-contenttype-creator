@@ -103,9 +103,7 @@ class ServiceProvider implements ServiceProviderInterface
     {
         /** @var EmailConfig $emailConfig */
         $emailConfig = $app[Config::class]->getEmailConfig(Config::DEFAULT_CONFIG_NAME);
-        /*
-         * TODO: add handling another forms of transport
-         */
+
         $transport = new Swift_SmtpTransport(
             $emailConfig->getHost(),
             $emailConfig->getPort(),

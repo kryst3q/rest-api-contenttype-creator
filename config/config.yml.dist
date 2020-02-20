@@ -27,18 +27,21 @@ email_configuration:
         security: null # possible values: null, ssl, ttl
         username: null
         password: null
-# default email sender data
+# list of available email senders
 sender:
+    # name of given email sender data configuration
     default:
         name: Dolor Sit
         email: dolor@sit.com
-# default email receiver data
+# list of available email receivers
 receiver:
+    # name of given email receiver data configuration
     default:
         name: Lorem Ipsum
         email: lorem@ipsum.com
-# default message metadata
+# list of available message configurations
 message:
+    # name of given message configuration
     default:
         # subject of email message
         subject: New contact form
