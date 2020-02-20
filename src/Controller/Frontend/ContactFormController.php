@@ -2,9 +2,9 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend;
 
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContactFormAction;
-use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\ContactFormDataTransformer;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Storage\Entity\ContactForm;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
+use Bolt\Storage\Entity\Content;
 use Silex\Application;
 use Silex\ControllerCollection;
 use Silex\ControllerProviderInterface;
@@ -24,8 +24,8 @@ class ContactFormController implements ControllerProviderInterface
         $controllerCollection = $app['controllers_factory'];
 
         $controllerCollection
-            ->post('/contact', [$this, 'processIncomingContactForm'])
-            ->convert('contactForm', ContactFormDataTransformer::class.':transform');
+            ->post('/create/{contentType}', [$this, 'processIncomingContactForm'])
+            ->convert('content', [$app[RequestDataTransformer::class], 'transform']);
 
         return $controllerCollection;
     }
@@ -33,11 +33,12 @@ class ContactFormController implements ControllerProviderInterface
     /**
      * @param Application $app
      * @param Request $request
-     * @param ContactForm $contactForm
+     * @param string $contentType
+     * @param Content $content
      * @return JsonResponse
      */
-    public function processIncomingContactForm(Application $app, Request $request, ContactForm $contactForm)
+    public function processIncomingContactForm(Application $app, Request $request, $contentType, Content $content)
     {
-        return $app[IncomingContactFormAction::class]->handle($contactForm);
+        return $app[IncomingContentTypeFormAction::class]->handle($content);
     }
 }

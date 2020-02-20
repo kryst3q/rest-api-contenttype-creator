@@ -2,17 +2,17 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Provider;
 
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContactFormAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\EmailConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ReceiverConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\SenderConfig;
-use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\ContactFormDataTransformer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentTypeValidatorConstraintsFactory;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Storage\Entity\ContactForm;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Storage\Repository\ContactFormRepository;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Swift_SmtpTransport;
@@ -36,10 +36,10 @@ class ServiceProvider implements ServiceProviderInterface
     {
         $this->registerConfig($app);
         $this->registerExceptionListener($app);
-        $this->registerContactFormDataTransformer($app);
-        $this->registerContactFormRepository($app);
         $this->registerMailer($app);
-        $this->registerIncomingContactFormAction($app);
+        $this->registerContentTypeValidatorConstraintsFactory($app);
+        $this->registerRequestDataTransformer($app);
+        $this->registerIncomingContentTypeFormAction($app);
     }
 
     /**
@@ -54,30 +54,16 @@ class ServiceProvider implements ServiceProviderInterface
      */
     private function registerConfig(Application $app)
     {
+        $config = new Config($this->config['api_prefix']);
+        $this->prepareEmailConfigs($config);
+        $this->prepareSenderConfigs($config);
+        $this->prepareReceiverConfigs($config);
+        $this->prepareMessageConfigs($config);
+        $this->prepareContentTypes($app, $config);
+
         $app[Config::class] = $app->share(
-            function () {
-                return new Config(
-                    $this->config['api_prefix'],
-                    new EmailConfig(
-                        $this->config['email_configuration']['host'],
-                        $this->config['email_configuration']['port'],
-                        $this->config['email_configuration']['security'],
-                        $this->config['email_configuration']['username'],
-                        $this->config['email_configuration']['password']
-                    ),
-                    new SenderConfig(
-                        $this->config['sender']['name'],
-                        $this->config['sender']['email']
-                    ),
-                    new ReceiverConfig(
-                        $this->config['receiver']['name'],
-                        $this->config['receiver']['email']
-                    ),
-                    new MessageConfig(
-                        $this->config['message']['subject'],
-                        $this->config['message']['template']
-                    )
-                );
+            function () use ($config) {
+                return $config;
             }
         );
     }
@@ -97,37 +83,14 @@ class ServiceProvider implements ServiceProviderInterface
     /**
      * @param Application $app
      */
-    private function registerContactFormDataTransformer(Application $app)
+    private function registerIncomingContentTypeFormAction(Application $app)
     {
-        $app[ContactFormDataTransformer::class] = $app->share(
+        $app[IncomingContentTypeFormAction::class] = $app->share(
             function ($app) {
-                return new ContactFormDataTransformer($app['validator']);
-            }
-        );
-    }
-
-    /**
-     * @param Application $app
-     */
-    private function registerContactFormRepository(Application $app)
-    {
-        $app[ContactFormRepository::class] = $app->share(
-            function ($app) {
-                return $app['storage']->getRepository(ContactForm::TABLE_NAME);
-            }
-        );
-    }
-
-    /**
-     * @param Application $app
-     */
-    private function registerIncomingContactFormAction(Application $app)
-    {
-        $app[IncomingContactFormAction::class] = $app->share(
-            function ($app) {
-                return new IncomingContactFormAction(
-                    $app[ContactFormRepository::class],
-                    $app[Mailer::class]
+                return new IncomingContentTypeFormAction(
+                    $app['storage'],
+                    $app[Mailer::class],
+                    $app[Config::class]
                 );
             }
         );
@@ -139,7 +102,7 @@ class ServiceProvider implements ServiceProviderInterface
     private function registerMailer(Application $app)
     {
         /** @var EmailConfig $emailConfig */
-        $emailConfig = $app[Config::class]->getEmailConfig();
+        $emailConfig = $app[Config::class]->getEmailConfig(Config::DEFAULT_CONFIG_NAME);
         /*
          * TODO: add handling another forms of transport
          */
@@ -151,6 +114,132 @@ class ServiceProvider implements ServiceProviderInterface
         $app[Mailer::class] = $app->share(
             function ($app) use ($transport) {
                 return new Mailer($app[Config::class], $transport);
+            }
+        );
+    }
+
+    /**
+     * @param Config $config
+     */
+    private function prepareEmailConfigs(Config $config)
+    {
+        foreach ($this->config['email_configuration'] as $name => $data) {
+            $emailConfig = new EmailConfig(
+                $this->config['email_configuration'][$name]['host'],
+                $this->config['email_configuration'][$name]['port'],
+                $this->config['email_configuration'][$name]['security'],
+                $this->config['email_configuration'][$name]['username'],
+                $this->config['email_configuration'][$name]['password']
+            );
+            $config->addEmailConfig($name, $emailConfig);
+        }
+    }
+
+    /**
+     * @param Config $config
+     */
+    private function prepareSenderConfigs(Config $config)
+    {
+        foreach ($this->config['sender'] as $name => $data) {
+            $senderConfig = new SenderConfig(
+                $this->config['sender'][$name]['name'],
+                $this->config['sender'][$name]['email']
+            );
+            $config->addSenderConfig($name, $senderConfig);
+        }
+    }
+
+    /**
+     * @param Config $config
+     */
+    private function prepareReceiverConfigs(Config $config)
+    {
+        foreach ($this->config['receiver'] as $name => $data) {
+            $receiverConfig = new ReceiverConfig(
+                $this->config['receiver'][$name]['name'],
+                $this->config['receiver'][$name]['email']
+            );
+            $config->addReceiverConfig($name, $receiverConfig);
+        }
+    }
+
+    /**
+     * @param Config $config
+     */
+    private function prepareMessageConfigs(Config $config)
+    {
+        foreach ($this->config['message'] as $name => $data) {
+            $messageConfig = new MessageConfig(
+                $this->config['message'][$name]['subject'],
+                $this->config['message'][$name]['template']
+            );
+            $config->addMessageConfig($name, $messageConfig);
+        }
+    }
+
+    /**
+     * @param string $contentTypeName
+     * @param string $configName
+     * @param array|string|null $defaultValue
+     * @return array|string|null
+     */
+    private function getContentTypeConfigValue($contentTypeName, $configName, $defaultValue = null)
+    {
+        return isset($this->config['content_type'][$contentTypeName][$configName])
+            ? $this->config['content_type'][$contentTypeName][$configName]
+            : $defaultValue;
+    }
+
+    /**
+     * @param Application $app
+     * @param Config $config
+     */
+    private function prepareContentTypes(Application $app, Config $config)
+    {
+        $availableContentTypes = $app['config']->get('contenttypes');
+        $availableContentTypesNames = array_keys($availableContentTypes);
+
+        foreach (array_keys($this->config['content_type']) as $contentTypeName) {
+            if (in_array($contentTypeName, $availableContentTypesNames)) {
+                $contentType = new ContentType(
+                    $availableContentTypes[$contentTypeName]['fields'],
+                    $this->getContentTypeConfigValue($contentTypeName, 'send_email', null) === true,
+                    $this->getContentTypeConfigValue($contentTypeName, 'message_fields', []),
+                    $this->getContentTypeConfigValue($contentTypeName, 'implode_glue', "\n"),
+                    $this->getContentTypeConfigValue($contentTypeName, 'message_name'),
+                    $this->getContentTypeConfigValue($contentTypeName, 'email_configuration_name'),
+                    $this->getContentTypeConfigValue($contentTypeName, 'sender_name'),
+                    $this->getContentTypeConfigValue($contentTypeName, 'receiver_name')
+                );
+                $config->addContentType($contentTypeName, $contentType);
+            }
+        }
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerRequestDataTransformer(Application $app)
+    {
+        $app[RequestDataTransformer::class] = $app->share(
+            function ($app) {
+                return new RequestDataTransformer(
+                    $app['validator'],
+                    $app[Config::class],
+                    $app[ContentTypeValidatorConstraintsFactory::class]
+                );
+            }
+        );
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerContentTypeValidatorConstraintsFactory(Application $app)
+    {
+        $app[ContentTypeValidatorConstraintsFactory::class] = $app->share(
+            function () {
+                return new ContentTypeValidatorConstraintsFactory();
             }
         );
     }

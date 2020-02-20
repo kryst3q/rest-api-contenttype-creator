@@ -2,6 +2,7 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm;
 
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContactFormController;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Provider\ServiceProvider;
@@ -30,26 +31,11 @@ class RestApiContactFormExtension extends SimpleExtension
      */
     protected function registerFrontendControllers()
     {
+        /** @var Config $config */
+        $config = $this->getContainer()->offsetGet(Config::class);
+
         return  [
-            '/api' => new ContactFormController()
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function registerServices(Application $app)
-    {
-        $this->extendRepositoryMapping();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function registerRepositoryMappings()
-    {
-        return [
-            ContactForm::TABLE_NAME => [ContactForm::class => ContactFormRepository::class],
+            $config->getApiPrefix() => new ContactFormController()
         ];
     }
 

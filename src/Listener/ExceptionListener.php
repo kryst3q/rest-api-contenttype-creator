@@ -17,8 +17,11 @@ class ExceptionListener
         if ($exception instanceof InvalidArgumentException) {
             $data = $this->handleInvalidArgumentException($exception);
             $statusCode = Response::HTTP_BAD_REQUEST;
+        } elseif ($exception instanceof \DomainException) {
+            $data = $exception->getMessage();
+            $statusCode = Response::HTTP_BAD_REQUEST;
         } else {
-            $data = 'An unexpected exception occurred.';
+            $data = $exception->getMessage();
             $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
         }
 

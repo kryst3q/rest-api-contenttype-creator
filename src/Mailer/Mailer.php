@@ -42,16 +42,37 @@ class Mailer
      */
     private function prepareSwiftMailerMessage(Message $message)
     {
+        $messageConfig = $this->config->getMessageConfig(Config::DEFAULT_CONFIG_NAME);
+        $subject = $messageConfig->getSubject();
+
+        if (null !== $message->getSubject()) {
+            $subject = $message->getSubject();
+        }
+
+        $senderConfig = $this->config->getSenderConfig(Config::DEFAULT_CONFIG_NAME);
+
+        if (null !== $message->getSenderConfig()) {
+            $senderConfig = $message->getSenderConfig();
+        }
+
+        $receiverConfig = $this->config->getReceiverConfig(Config::DEFAULT_CONFIG_NAME);
+
+        if (null !== $message->getReceiverConfig()) {
+            $receiverConfig = $message->getReceiverConfig();
+        }
+
         $swiftMessage = new Swift_Message(
-            $this->config->getMessageConfig()->getSubject(),
+            $subject,
             $message->getContent()
         );
-        $swiftMessage->setFrom([
-            $this->config->getSenderConfig()->getEmail() =>$this->config->getSenderConfig()->getName()
-        ]);
-        $swiftMessage->setTo([
-            $this->config->getReceiverConfig()->getEmail() =>$this->config->getReceiverConfig()->getName()
-        ]);
+        $swiftMessage->setFrom(
+            $senderConfig->getEmail(),
+            $senderConfig->getName()
+        );
+        $swiftMessage->setTo(
+            $receiverConfig->getEmail(),
+            $receiverConfig->getName()
+        );
 
         return $swiftMessage;
     }

@@ -4,43 +4,86 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Config;
 
 class Config
 {
+    const DEFAULT_CONFIG_NAME = 'default';
+
     /**
      * @var string
      */
     private $apiPrefix;
 
     /**
-     * @var EmailConfig
+     * @var EmailConfig[]
      */
-    private $emailConfig;
+    private $emailConfigs;
 
     /**
-     * @var SenderConfig
+     * @var SenderConfig[]
      */
-    private $senderConfig;
+    private $senderConfigs;
 
     /**
-     * @var ReceiverConfig
+     * @var ReceiverConfig[]
      */
-    private $receiverConfig;
+    private $receiverConfigs;
 
     /**
-     * @var MessageConfig
+     * @var MessageConfig[]
      */
-    private $messageConfig;
+    private $messageConfigs;
 
-    public function __construct(
-        $apiPrefix,
-        EmailConfig $emailConfig,
-        SenderConfig $senderConfig,
-        ReceiverConfig $receiverConfig,
-        MessageConfig $messageConfig
-    ) {
+    /**
+     * @var array
+     */
+    private $contentTypes;
+
+    public function __construct($apiPrefix)
+    {
         $this->apiPrefix = $apiPrefix;
-        $this->emailConfig = $emailConfig;
-        $this->senderConfig = $senderConfig;
-        $this->receiverConfig = $receiverConfig;
-        $this->messageConfig = $messageConfig;
+    }
+
+    /**
+     * @param string $emailConfigName
+     * @param EmailConfig $emailConfig
+     */
+    public function addEmailConfig($emailConfigName, EmailConfig $emailConfig)
+    {
+        $this->emailConfigs[$emailConfigName] = $emailConfig;
+    }
+
+    /**
+     * @param string $name
+     * @param SenderConfig $senderConfig
+     */
+    public function addSenderConfig($name, SenderConfig $senderConfig)
+    {
+        $this->senderConfigs[$name] = $senderConfig;
+    }
+
+    /**
+     * @param string $name
+     * @param ReceiverConfig $receiverConfig
+     */
+    public function addReceiverConfig($name, ReceiverConfig $receiverConfig)
+    {
+        $this->receiverConfigs[$name] = $receiverConfig;
+    }
+
+    /**
+     * @param string $name
+     * @param MessageConfig $messageConfig
+     */
+    public function addMessageConfig($name, MessageConfig $messageConfig)
+    {
+        $this->messageConfigs[$name] = $messageConfig;
+    }
+
+    /**
+     * @param string $contentTypeName
+     * @param ContentType $contentType
+     */
+    public function addContentType($contentTypeName, ContentType $contentType)
+    {
+        $this->contentTypes[$contentTypeName] = $contentType;
     }
 
     /**
@@ -48,38 +91,90 @@ class Config
      */
     public function getApiPrefix()
     {
-        return $this->apiPrefix;
+        $apiPrefix = trim($this->apiPrefix);
+
+        if (strpos($apiPrefix, '/') !== 0) {
+            $apiPrefix = '/'.$apiPrefix;
+        }
+
+        return $apiPrefix;
     }
 
     /**
-     * @return EmailConfig
+     * @param string $contentTypeName
+     * @return bool
      */
-    public function getEmailConfig()
+    public function hasContentType($contentTypeName)
     {
-        return $this->emailConfig;
+        return isset($this->contentTypes[$contentTypeName]);
     }
 
     /**
-     * @return SenderConfig
+     * @return string[]
      */
-    public function getSenderConfig()
+    public function getContentTypesNames()
     {
-        return $this->senderConfig;
+        return array_keys($this->contentTypes);
     }
 
     /**
-     * @return ReceiverConfig
+     * @param string $contentTypeName
+     * @return ContentType
      */
-    public function getReceiverConfig()
+    public function getContentType($contentTypeName)
     {
-        return $this->receiverConfig;
+        return $this->contentTypes[$contentTypeName];
     }
 
     /**
-     * @return MessageConfig
+     * @param string|null $messageConfigName
+     * @return MessageConfig|null
      */
-    public function getMessageConfig()
+    public function getMessageConfig($messageConfigName)
     {
-        return $this->messageConfig;
+        if (null === $messageConfigName) {
+            return null;
+        }
+
+        return $this->messageConfigs[$messageConfigName];
+    }
+
+    /**
+     * @param string|null $receiverConfigName
+     * @return ReceiverConfig|null
+     */
+    public function getReceiverConfig($receiverConfigName)
+    {
+        if (null === $receiverConfigName) {
+            return null;
+        }
+
+        return $this->receiverConfigs[$receiverConfigName];
+    }
+
+    /**
+     * @param string|null $senderConfigName
+     * @return SenderConfig|null
+     */
+    public function getSenderConfig($senderConfigName)
+    {
+        if (null === $senderConfigName) {
+            return null;
+        }
+
+        return $this->senderConfigs[$senderConfigName];
+    }
+
+    /**
+     * @param string|null $emailConfigName
+     * @return EmailConfig|null
+     */
+    public function getEmailConfig($emailConfigName)
+    {
+        if (null === $emailConfigName) {
+            return null;
+        }
+
+        return $this->emailConfigs[$emailConfigName];
     }
 }

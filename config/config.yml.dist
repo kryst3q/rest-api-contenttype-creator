@@ -1,16 +1,46 @@
-api_prefix: '/api'
+# prefix of this extensions rest api routings
+api_prefix: 'api'
+# list of content types that will be handled by extension
+content_type:
+    # content type name identical to one from contenttypes.yml file
+    entries:
+        # information if given content type has to be send through email after saving
+        send_email: false
+        # content type fields that will be used as email message
+        #message_fields: [title, body]
+        # method of concatenating message fields into one message; default "\n"
+        #implode_glue: \n
+        # email configuration that should be used for sending given content type; default will be used if not specified
+        #email_configuration_name: default
+        # name of email sender data from "sender" list; default will be used if not specified
+        #sender_name: default
+        # name of email receiver data from "receiver" list; default will be used if not specified
+        #receiver_name: default
+        # name of message metadata from "message" list; default will be used if not specified
+        #message_name: default
+# list of available email configurations
 email_configuration:
-    host: localhost
-    port: 25
-    security: null # possible values: null, ssl, ttl
-    username: null
-    password: null
+    # name of given email configuration
+    default:
+        host: localhost
+        port: 25
+        security: null # possible values: null, ssl, ttl
+        username: null
+        password: null
+# default email sender data
 sender:
-    name: Dolor Sit
-    email: dolor@sit.com
+    default:
+        name: Dolor Sit
+        email: dolor@sit.com
+# default email receiver data
 receiver:
-    name: Lorem Ipsum
-    email: lorem@ipsum.com
+    default:
+        name: Lorem Ipsum
+        email: lorem@ipsum.com
+# default message metadata
 message:
-    subject: New contact form
-    template: null
+    default:
+        # subject of email message
+        subject: New contact form
+        # path to email template; if set to null the default one will be used
+        template: null

@@ -4,4 +4,6 @@ composer.lock
 vendor/
 tests/tmp/
 .idea
+public
+app/cache
 
