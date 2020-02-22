@@ -6,7 +6,7 @@ use Bolt\Exception\InvalidRepositoryException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentSaveException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentTypeSaveException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Message;
 use Bolt\Storage\Entity\Content;
@@ -41,7 +41,7 @@ class IncomingContentTypeFormAction
     /**
      * @param Content $content
      * @return JsonResponse
-     * @throws UnsuccessfulContentSaveException
+     * @throws UnsuccessfulContentTypeSaveException
      * @throws InvalidRepositoryException
      */
     public function handle(Content $content)
@@ -50,7 +50,7 @@ class IncomingContentTypeFormAction
         $success = $repository->save($content);
 
         if (!$success) {
-            throw new UnsuccessfulContentSaveException();
+            throw new UnsuccessfulContentTypeSaveException();
         }
 
         $contentType = $this->config->getContentType($content->getContenttype());

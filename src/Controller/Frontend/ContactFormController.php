@@ -5,7 +5,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend;
 use Bolt\Exception\InvalidRepositoryException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentSaveException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentTypeSaveException;
 use Bolt\Storage\Entity\Content;
 use Silex\Application;
 use Silex\ControllerCollection;
@@ -57,7 +57,7 @@ class ContactFormController implements ControllerProviderInterface
      * @param Content $content
      * @return JsonResponse
      * @throws InvalidRepositoryException
-     * @throws UnsuccessfulContentSaveException
+     * @throws UnsuccessfulContentTypeSaveException
      */
     public function processIncomingContactForm(
         Application $app,

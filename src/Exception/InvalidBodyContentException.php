@@ -2,7 +2,7 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Exception;
 
-class NotHandledContentTypeException extends \DomainException implements TranslatedException
+class InvalidBodyContentException extends \Exception implements TranslatedException
 {
     /**
      * @var string
@@ -14,7 +14,7 @@ class NotHandledContentTypeException extends \DomainException implements Transla
      */
     public function __construct($contentType)
     {
-        parent::__construct('Content type {contentType} is not handled.');
+        parent::__construct('Request body content is invalid {contentType}.');
 
         $this->contentType = $contentType;
     }

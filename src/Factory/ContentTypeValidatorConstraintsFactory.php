@@ -3,6 +3,7 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Factory;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Translator\Translator;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Date;
@@ -23,6 +24,16 @@ class ContentTypeValidatorConstraintsFactory
     const FIELD_TYPE_DATE = 'date';
     const FIELD_TYPE_SELECT = 'select';
     const FIELD_TYPE_CHECKBOX = 'checkbox';
+
+    /**
+     * @var Translator
+     */
+    private $translator;
+
+    public function __construct(Translator $translator)
+    {
+        $this->translator = $translator;
+    }
 
     /**
      * @param ContentType $contentType
@@ -56,22 +67,40 @@ class ContentTypeValidatorConstraintsFactory
         switch ($fieldType) {
             case self::FIELD_TYPE_TEXT:
                 return [
-                    new Type(['type' => 'string']),
-                    new Length(['max' => 256])
+                    new Type([
+                        'type' => 'string',
+                        'message' => $this->translateTypeConstraintMessage('string')
+                    ]),
+                    new Length([
+                        'max' => 256,
+                        'maxMessage' => $this->translateMaxLengthConstraintMessage(256)
+                    ])
                 ];
             case self::FIELD_TYPE_INTEGER:
                 return [
-                    new Type(['type' => 'int'])
+                    new Type([
+                        'type' => 'int',
+                        'message' => $this->translateTypeConstraintMessage('int')
+                    ])
                 ];
             case self::FIELD_TYPE_FLOAT:
                 return [
-                    new Type(['type' => 'float'])
+                    new Type([
+                        'type' => 'float',
+                        'message' => $this->translateTypeConstraintMessage('float')
+                    ])
                 ];
             case self::FIELD_TYPE_TEXTAREA:
             case self::FIELD_TYPE_MARKDOWN:
                 return [
-                    new Type(['type' => 'string']),
-                    new Length(['max' => 32768])
+                    new Type([
+                        'type' => 'string',
+                        'message' => $this->translateTypeConstraintMessage('string')
+                    ]),
+                    new Length([
+                        'max' => 32768,
+                        'maxMessage' => $this->translateMaxLengthConstraintMessage(32768)
+                    ])
                 ];
             case self::FIELD_TYPE_DATETIME:
                 return [
@@ -87,7 +116,10 @@ class ContentTypeValidatorConstraintsFactory
                 ];
             case self::FIELD_TYPE_CHECKBOX:
                 return [
-                    new Type(['type' => 'bool'])
+                    new Type([
+                        'type' => 'bool',
+                        'message' => $this->translateTypeConstraintMessage('boolean')
+                    ])
                 ];
             default:
                 return [];
@@ -108,7 +140,12 @@ class ContentTypeValidatorConstraintsFactory
      */
     private function addRequireConstraint(array &$fieldConstraints)
     {
-        $fieldConstraints = array_merge([new NotBlank()], $fieldConstraints);
+        $requireConstraint = [
+            new NotBlank([
+                'message' => $this->translator->trans('This field is required.')
+            ])
+        ];
+        $fieldConstraints = array_merge($requireConstraint, $fieldConstraints);
     }
 
     /**
@@ -133,7 +170,9 @@ class ContentTypeValidatorConstraintsFactory
     private function configureTextTypeFieldConstraints($fieldName, array &$fieldConstraints)
     {
         if (strpos($fieldName, 'email') !== false) {
-            $fieldConstraints[] = new Email();
+            $fieldConstraints[] = new Email([
+                'message' => $this->translator->trans('This value is not a valid email address.')
+            ]);
         }
     }
 
@@ -152,5 +191,33 @@ class ContentTypeValidatorConstraintsFactory
                 $this->configureSelectTypeFieldConstraints($fieldMetadata, $fieldConstraints);
                 break;
         }
+    }
+
+    /**
+     * @param string $type
+     * @return string
+     */
+    private function translateTypeConstraintMessage($type)
+    {
+        return $this->translator->trans(
+            'This value should be of type {type}.',
+            [
+                '{type}' => $type
+            ]
+        );
+    }
+
+    /**
+     * @param int $limit
+     * @return string
+     */
+    private function translateMaxLengthConstraintMessage($limit)
+    {
+        return $this->translator->trans(
+            'This value is too long. It should have {limit} character or less.',
+            [
+                '{limit}' => $limit
+            ]
+        );
     }
 }

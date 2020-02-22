@@ -3,11 +3,23 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Listener;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidArgumentException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\TranslatedException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Translator\Translator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExceptionListener
 {
+    /**
+     * @var Translator
+     */
+    private $translator;
+
+    public function __construct(Translator $translator)
+    {
+        $this->translator = $translator;
+    }
+
     /**
      * @param \Exception $exception
      * @return JsonResponse
@@ -17,8 +29,8 @@ class ExceptionListener
         if ($exception instanceof InvalidArgumentException) {
             $data = $this->handleInvalidArgumentException($exception);
             $statusCode = Response::HTTP_BAD_REQUEST;
-        } elseif ($exception instanceof \DomainException) {
-            $data = $exception->getMessage();
+        } elseif ($exception instanceof TranslatedException) {
+            $data = $this->translator->trans($exception->getMessage(), $exception->getParameters());
             $statusCode = Response::HTTP_BAD_REQUEST;
         } else {
             $data = $exception->getMessage();

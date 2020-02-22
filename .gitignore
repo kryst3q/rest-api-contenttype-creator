@@ -5,5 +5,5 @@ vendor/
 tests/tmp/
 .idea
 public
-app/cache
+app
 

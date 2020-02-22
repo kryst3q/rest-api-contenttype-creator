@@ -5,6 +5,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidArgumentException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidBodyContentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\NotHandledContentTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentTypeValidatorConstraintsFactory;
 use Bolt\Storage\Entity\Content;
@@ -44,6 +45,7 @@ class RequestDataTransformer
      * @return Content
      * @throws InvalidArgumentException
      * @throws NotHandledContentTypeException
+     * @throws InvalidBodyContentException
      */
     public function transform($transformer, Request $request)
     {
@@ -71,11 +73,18 @@ class RequestDataTransformer
 
     /**
      * @param Request $request
-     * @return mixed
+     * @return array
+     * @throws InvalidBodyContentException
      */
     private function getInputData(Request $request)
     {
-        return json_decode($request->getContent(), true);
+        $inputData = json_decode($request->getContent(), true);
+
+        if (false === $inputData || null === $inputData) {
+            throw new InvalidBodyContentException('json');
+        }
+
+        return $inputData;
     }
 
     /**
@@ -126,6 +135,7 @@ class RequestDataTransformer
      * @param ContentType $contentType
      * @return array
      * @throws InvalidArgumentException
+     * @throws InvalidBodyContentException
      */
     private function prepareData(Request $request, ContentType $contentType)
     {

@@ -41,7 +41,6 @@
         }
     },
     "extra": {
-        "bolt-assets": "web",
         "bolt-class": "Bolt\\Extension\\Kryst3q\\RestApiContactForm\\RestApiContactFormExtension"
     }
 }

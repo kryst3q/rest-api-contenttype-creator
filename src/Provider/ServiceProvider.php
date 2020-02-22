@@ -13,6 +13,7 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransfo
 use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentTypeValidatorConstraintsFactory;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Translator\Translator;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Swift_SmtpTransport;
@@ -35,6 +36,7 @@ class ServiceProvider implements ServiceProviderInterface
     public function register(Application $app)
     {
         $this->registerConfig($app);
+        $this->registerTranslator($app);
         $this->registerExceptionListener($app);
         $this->registerMailer($app);
         $this->registerContentTypeValidatorConstraintsFactory($app);
@@ -74,8 +76,8 @@ class ServiceProvider implements ServiceProviderInterface
     private function registerExceptionListener(Application $app)
     {
         $app[ExceptionListener::class] = $app->share(
-            function () {
-                return new ExceptionListener();
+            function ($app) {
+                return new ExceptionListener($app[Translator::class]);
             }
         );
     }
@@ -239,8 +241,20 @@ class ServiceProvider implements ServiceProviderInterface
     private function registerContentTypeValidatorConstraintsFactory(Application $app)
     {
         $app[ContentTypeValidatorConstraintsFactory::class] = $app->share(
-            function () {
-                return new ContentTypeValidatorConstraintsFactory();
+            function ($app) {
+                return new ContentTypeValidatorConstraintsFactory($app[Translator::class]);
+            }
+        );
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerTranslator(Application $app)
+    {
+        $app[Translator::class] = $app->share(
+            function ($app) {
+                return new Translator();
             }
         );
     }

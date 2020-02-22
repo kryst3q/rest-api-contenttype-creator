@@ -128,9 +128,10 @@ The request consist of `/{api_prefix}/create/{contenttype}`.
  - [ ] add handling another than SMTP form of email transport
  - [ ] add validating configuration during container creation (use symfony validator)
  - [ ] handle case when email was not sent
- - [ ] add translations
+ - [x] add translations
  - [ ] add using different than JSON body types (yaml, xml) using symfony serializer
  - [ ] add queueing messages and send them by cron task 
  - [ ] add handling rest of contenttypes field types
  - [ ] add file upload
  - [ ] add using twig template in email message
+ - [ ] move sending email functionality to separate extension

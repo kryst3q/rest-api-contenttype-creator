@@ -1,0 +1,7 @@
+Content type {contentType} is not handled.: 'Typ zawartości {contentType} nie jest obsługiwany.'
+An error occurred during saving received content type.: 'Wystąpił błąd podczas zapisu typu zawartości.'
+Request body content is invalid {contentType}.: 'Zawartość ciała zapytania jest nieprawidłowym plikiem {contentType}.'
+This value should be of type {type}.: 'Podana wartość powinna być typu {type}.'
+This field is required.: 'To pole jest wymagane.'
+This value is not a valid email address.: 'Podana wartość nie jest poprawnym adresem email.'
+This value is too long. It should have {limit} character or less.: 'Podana wartość jest zbyt długa. Powinna zawierać {limit} lub mniej znaków.'
