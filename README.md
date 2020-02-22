@@ -5,7 +5,7 @@ Bolt 3 extension allowing contenttypes creation using REST API request. It also 
 
 ## Configuration
 
-```
+```yaml
 # prefix of this extensions rest api routings
 api_prefix: 'api'
 # list of content types that will be handled by extension
@@ -62,7 +62,7 @@ message:
 Assume that we want to have contact form in one of our sites and want to be informed by email when someone will fill one.
 In that situation we create new contenttype in contenttypes.yml file that will be representing our contact form:
 
-```
+```yaml
 contact_forms:
     name: Contact forms
     singular_name: Contact form
@@ -87,7 +87,7 @@ contact_forms:
 
 Next, if we want to have possibility to create our new contenttype using REST API request we must enable it in extension config so it should looks like below:
 
-```
+```yaml
 api_prefix: '/api'
 content_type:
     contact_forms:
@@ -124,13 +124,13 @@ curl -X POST https://mydomain.com/api/create/contact_forms -d '{"name": "Lorem I
 The request consist of `/{api_prefix}/create/{contenttype}`.
 
 ## TODO
-* cover code by tests
-* add handling another than SMTP form of email transport
-* add validating configuration during container creation (use symfony validator)
-* handle case when email was not sent
-* add translations
-* add using different than JSON body types (yaml, xml) using symfony serializer
-* add queueing messages and send them by cron task 
-* add handling rest of contenttypes field types
-* add file upload
-* add using twig template in email message
+ - [ ] cover code by tests
+ - [ ] add handling another than SMTP form of email transport
+ - [ ] add validating configuration during container creation (use symfony validator)
+ - [ ] handle case when email was not sent
+ - [ ] add translations
+ - [ ] add using different than JSON body types (yaml, xml) using symfony serializer
+ - [ ] add queueing messages and send them by cron task 
+ - [ ] add handling rest of contenttypes field types
+ - [ ] add file upload
+ - [ ] add using twig template in email message
