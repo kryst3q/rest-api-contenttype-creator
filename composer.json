@@ -1,6 +1,6 @@
 {
     "name": "kryst3q/rest-api-contenttype-creator",
-    "description": "The extension's primary functionality is creating selected contenttypes by REST API requests. It also allows to automatically send email when it occurs. It could be helpful when using the extension as contact form or job application form to inform employer about new offers.",
+    "description": "The extension's primary functionality is creating selected contenttypes through REST API requests. It also allows to automatically send email when it occurs. It could be helpful when using the extension as contact form or job application form to inform employer about new offers.",
     "type": "bolt-extension",
     "keywords": [
         "rest",
