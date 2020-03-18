@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
 
-class ContentTypeValidatorConstraintsFactory
+class ContentConstraintsFactory
 {
     const FIELD_TYPE_TEXT = 'text';
     const FIELD_TYPE_INTEGER = 'integer';
@@ -24,6 +24,7 @@ class ContentTypeValidatorConstraintsFactory
     const FIELD_TYPE_DATE = 'date';
     const FIELD_TYPE_SELECT = 'select';
     const FIELD_TYPE_CHECKBOX = 'checkbox';
+    const FIELD_TYPE_FILE = 'file';
 
     /**
      * @var Translator
@@ -44,6 +45,10 @@ class ContentTypeValidatorConstraintsFactory
         $constraints = [];
 
         foreach ($contentType->getFields() as $fieldName => $fieldMetadata) {
+            if ($fieldMetadata['type'] === self::FIELD_TYPE_FILE) {
+                continue;
+            }
+
             $fieldConstraints = $this->getConstraints($fieldMetadata['type']);
 
             if ($this->fieldIsRequired($fieldMetadata)) {
@@ -55,7 +60,12 @@ class ContentTypeValidatorConstraintsFactory
             $constraints[$fieldName] = $fieldConstraints;
         }
 
-        return new Collection(['fields' => $constraints, 'allowExtraFields' => ['contentType']]);
+        return new Collection([
+            'fields' => $constraints,
+            'allowExtraFields' => ['contentType'],
+            'extraFieldsMessage' => $this->translator->trans('This field was not expected.'),
+            'missingFieldsMessage' => $this->translator->trans('This field is missing.')
+        ]);
     }
 
     /**

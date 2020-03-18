@@ -6,15 +6,19 @@ use Bolt\Exception\InvalidRepositoryException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
+use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidArgumentException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidBodyContentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentTypeSaveException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Message;
 use Bolt\Storage\Entity\Content;
 use Bolt\Storage\EntityManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IncomingContentTypeFormAction
+class CreateContentAction
 {
     /**
      * @var EntityManager
@@ -31,21 +35,37 @@ class IncomingContentTypeFormAction
      */
     private $config;
 
-    public function __construct(EntityManager $storage, Mailer $mailer, Config $config)
-    {
+    /**
+     * @var RequestDataTransformer
+     */
+    private $requestDataTransformer;
+
+    public function __construct(
+        EntityManager $storage,
+        Mailer $mailer,
+        Config $config,
+        RequestDataTransformer $requestDataTransformer
+    ) {
         $this->storage = $storage;
         $this->mailer = $mailer;
         $this->config = $config;
+        $this->requestDataTransformer = $requestDataTransformer;
     }
 
     /**
-     * @param Content $content
+     * @param string $contentType
+     * @param Request $request
+     *
      * @return JsonResponse
-     * @throws UnsuccessfulContentTypeSaveException
+     *
      * @throws InvalidRepositoryException
+     * @throws UnsuccessfulContentTypeSaveException
+     * @throws InvalidArgumentException
+     * @throws InvalidBodyContentException
      */
-    public function handle(Content $content)
+    public function handle($contentType, Request $request)
     {
+        $content = $this->requestDataTransformer->transform($contentType, $request);
         $repository = $this->storage->getRepository($content->getContenttype());
         $success = $repository->save($content);
 
@@ -66,7 +86,7 @@ class IncomingContentTypeFormAction
             }
         }
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new JsonResponse(['id' => $content->getId()], Response::HTTP_OK);
     }
 
     /**

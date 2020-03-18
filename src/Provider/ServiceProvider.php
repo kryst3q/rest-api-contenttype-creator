@@ -2,7 +2,8 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Provider;
 
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\EmailConfig;
@@ -10,10 +11,12 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ReceiverConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\SenderConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentTypeValidatorConstraintsFactory;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentConstraintsFactory;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Repository\ContentRepository;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Translator\Translator;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploader;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Swift_SmtpTransport;
@@ -41,7 +44,10 @@ class ServiceProvider implements ServiceProviderInterface
         $this->registerMailer($app);
         $this->registerContentTypeValidatorConstraintsFactory($app);
         $this->registerRequestDataTransformer($app);
-        $this->registerIncomingContentTypeFormAction($app);
+        $this->registerContentRepository($app);
+        $this->registerUploader($app);
+        $this->registerCreateContentAction($app);
+        $this->registerAttachMediaToContentAction($app);
     }
 
     /**
@@ -85,14 +91,15 @@ class ServiceProvider implements ServiceProviderInterface
     /**
      * @param Application $app
      */
-    private function registerIncomingContentTypeFormAction(Application $app)
+    private function registerCreateContentAction(Application $app)
     {
-        $app[IncomingContentTypeFormAction::class] = $app->share(
+        $app[CreateContentAction::class] = $app->share(
             function ($app) {
-                return new IncomingContentTypeFormAction(
+                return new CreateContentAction(
                     $app['storage'],
                     $app[Mailer::class],
-                    $app[Config::class]
+                    $app[Config::class],
+                    $app[RequestDataTransformer::class]
                 );
             }
         );
@@ -229,7 +236,7 @@ class ServiceProvider implements ServiceProviderInterface
                 return new RequestDataTransformer(
                     $app['validator'],
                     $app[Config::class],
-                    $app[ContentTypeValidatorConstraintsFactory::class]
+                    $app[ContentConstraintsFactory::class]
                 );
             }
         );
@@ -240,9 +247,9 @@ class ServiceProvider implements ServiceProviderInterface
      */
     private function registerContentTypeValidatorConstraintsFactory(Application $app)
     {
-        $app[ContentTypeValidatorConstraintsFactory::class] = $app->share(
+        $app[ContentConstraintsFactory::class] = $app->share(
             function ($app) {
-                return new ContentTypeValidatorConstraintsFactory($app[Translator::class]);
+                return new ContentConstraintsFactory($app[Translator::class]);
             }
         );
     }
@@ -255,6 +262,42 @@ class ServiceProvider implements ServiceProviderInterface
         $app[Translator::class] = $app->share(
             function ($app) {
                 return new Translator();
+            }
+        );
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerContentRepository(Application $app)
+    {
+        $app[ContentRepository::class] = $app->share(
+            function ($app) {
+                return new ContentRepository($app['storage']);
+            }
+        );
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerUploader(Application $app)
+    {
+        $app[Uploader::class] = $app->share(
+            function ($app) {
+                return new Uploader($app['filesystem'], $app[Config::class]);
+            }
+        );
+    }
+
+    /**
+     * @param Application $app
+     */
+    private function registerAttachMediaToContentAction(Application $app)
+    {
+        $app[AttachMediaToContentAction::class] = $app->share(
+            function ($app) {
+                return new AttachMediaToContentAction($app[ContentRepository::class], $app[Uploader::class]);
             }
         );
     }

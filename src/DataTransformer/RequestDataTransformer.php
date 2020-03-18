@@ -7,7 +7,7 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidArgumentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidBodyContentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\NotHandledContentTypeException;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentTypeValidatorConstraintsFactory;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentConstraintsFactory;
 use Bolt\Storage\Entity\Content;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -25,14 +25,14 @@ class RequestDataTransformer
     private $config;
 
     /**
-     * @var ContentTypeValidatorConstraintsFactory
+     * @var ContentConstraintsFactory
      */
     private $constraintsFactory;
 
     public function __construct(
         ValidatorInterface $validator,
         Config $config,
-        ContentTypeValidatorConstraintsFactory $constraintsFactory
+        ContentConstraintsFactory $constraintsFactory
     ) {
         $this->validator = $validator;
         $this->config = $config;
@@ -40,21 +40,18 @@ class RequestDataTransformer
     }
 
     /**
-     * @param null $transformer
+     * @param string $contentTypeName
      * @param Request $request
+     *
      * @return Content
+     *
      * @throws InvalidArgumentException
-     * @throws NotHandledContentTypeException
      * @throws InvalidBodyContentException
      */
-    public function transform($transformer, Request $request)
+    public function transform($contentTypeName, Request $request)
     {
-        $contentTypeName = $request->get('contentType');
-
         $this->validateIfRequestedContentTypeCanBeHandled($contentTypeName);
-
         $contentType = $this->config->getContentType($contentTypeName);
-
         $data = $this->prepareData($request, $contentType);
 
         return $this->prepareContent($contentTypeName, $data);
@@ -62,6 +59,7 @@ class RequestDataTransformer
 
     /**
      * @param string $contentTypeName
+     *
      * @throws NotHandledContentTypeException
      */
     private function validateIfRequestedContentTypeCanBeHandled($contentTypeName)
@@ -73,7 +71,9 @@ class RequestDataTransformer
 
     /**
      * @param Request $request
+     *
      * @return array
+     *
      * @throws InvalidBodyContentException
      */
     private function getInputData(Request $request)
@@ -90,6 +90,7 @@ class RequestDataTransformer
     /**
      * @param array $inputData
      * @param ContentType $contentType
+     *
      * @return array
      */
     private function sanitizeInputData($inputData, ContentType $contentType)
@@ -100,6 +101,7 @@ class RequestDataTransformer
     /**
      * @param ContentType $contentType
      * @param array $data
+     *
      * @throws InvalidArgumentException
      */
     private function validateData(ContentType $contentType, array $data)
@@ -115,6 +117,7 @@ class RequestDataTransformer
     /**
      * @param string $contentTypeName
      * @param array $data
+     *
      * @return Content
      */
     private function prepareContent($contentTypeName, array $data)
@@ -133,7 +136,9 @@ class RequestDataTransformer
     /**
      * @param Request $request
      * @param ContentType $contentType
+     *
      * @return array
+     *
      * @throws InvalidArgumentException
      * @throws InvalidBodyContentException
      */

@@ -2,9 +2,10 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm;
 
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\IncomingContentTypeFormAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContactFormController;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContentController;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Provider\ServiceProvider;
@@ -32,13 +33,13 @@ class RestApiContactFormExtension extends SimpleExtension
     {
         /** @var Config $config */
         $config = $this->get(Config::class);
-        /** @var RequestDataTransformer $requestDataTransformer */
-        $requestDataTransformer = $this->get(RequestDataTransformer::class);
-        /** @var IncomingContentTypeFormAction $incomingContentTypeFormAction */
-        $incomingContentTypeFormAction = $this->get(IncomingContentTypeFormAction::class);
+        /** @var CreateContentAction $incomingContentTypeFormAction */
+        $incomingContentTypeFormAction = $this->get(CreateContentAction::class);
+        /** @var AttachMediaToContentAction $attachMediaToContentAction */
+        $attachMediaToContentAction = $this->get(AttachMediaToContentAction::class);
 
         return  [
-            $config->getApiPrefix() => new ContactFormController($requestDataTransformer, $incomingContentTypeFormAction)
+            $config->getApiPrefix() => new ContentController($incomingContentTypeFormAction, $attachMediaToContentAction)
         ];
     }
 

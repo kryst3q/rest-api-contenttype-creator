@@ -5,3 +5,7 @@ This value should be of type {type}.: 'Podana wartość powinna być typu {type}
 This field is required.: 'To pole jest wymagane.'
 This value is not a valid email address.: 'Podana wartość nie jest poprawnym adresem email.'
 This value is too long. It should have {limit} character or less.: 'Podana wartość jest zbyt długa. Powinna zawierać {limit} lub mniej znaków.'
+Content type "{contentType}" has no field named "{fieldName}".: 'Typ zawartości "{contentType}" nie posiada pola o nazwie "{fieldName}".'
+Field "{fieldName}" of content type "{contentType}" is of type {actualType} but {expectedType} expected.: 'Pole "{fieldName}" typu zawartości "{contentType}" jest typu {actualType} a nie {expectedType}.'
+This field was not expected.: 'To pole nie było oczekiwane.'
+This field is missing.: 'Brakuje tego pola.'

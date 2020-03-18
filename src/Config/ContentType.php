@@ -146,4 +146,22 @@ class ContentType
     {
         return $this->receiverConfigName;
     }
+
+    /**
+     * @param string $fieldName
+     * @return bool
+     */
+    public function hasField($fieldName)
+    {
+        return isset($this->fields[$fieldName]);
+    }
+
+    /**
+     * @param string $fieldName
+     * @return array
+     */
+    public function getField($fieldName)
+    {
+        return $this->fields[$fieldName];
+    }
 }
