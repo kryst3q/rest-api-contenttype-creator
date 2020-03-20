@@ -14,6 +14,8 @@ content_type:
     entries:
         # information if given content type has to be send through email after saving
         send_email: false
+        # action after which email message has to be send; possible values: content_create, attach_media; default: content_create
+        #send_email_after: content_create
         # content type fields that will be used as email message
         #message_fields: [title, body]
         # method of concatenating message fields into one message; default "\n"
@@ -83,6 +85,11 @@ contact_forms:
             readonly: true
             group: main
             required: true
+        photo:
+            label: Photo
+            type: file
+            extensions: [png]
+            upload: contact_forms
 ```
 
 Next, if we want to have possibility to create our new contenttype using REST API request we must enable it in extension config so it should looks like below:
@@ -92,7 +99,8 @@ api_prefix: '/api'
 content_type:
     contact_forms:
         send_email: true
-        message_fields: [message]
+        send_email_after: attach_media
+        message_fields: [message, photo]
 email_configuration:
     default:
         host: some.mail-host.net
@@ -114,14 +122,21 @@ message:
         template: null
 ```
 
-In `content_type` section we add our `contact_forms` contenttype, enabled sending emails on it's creation and selecting that email content should be ceated from contenttype's `message` field.
+In `content_type` section we add our `contact_forms` contenttype, enabled sending emails on it's creation and selecting that email content should be ceated from contenttype's `message` field. We also enabled sending email after attaching file to content.
 That's it. Now it's time to create new contact form:
 
-```
-curl -X POST https://mydomain.com/api/create/contact_forms -d '{"name": "Lorem Ipsum", "email": "lorem@ipsum.pl", "message": "Pellentesque id libero sed ipsum vehicula blandit. Integer non lorem imperdiet, dignissim neque in, dignissim risus."}' -H "Content-Type: application/json"
+```shell script
+curl -X POST 'https://mydomain.com/api/create/contact_forms' -d '{"name": "Lorem Ipsum", "email": "lorem@ipsum.pl", "message": "Pellentesque id libero sed ipsum vehicula blandit. Integer non lorem imperdiet, dignissim neque in, dignissim risus."}' -H "Content-Type: application/json"
 ```
 
-The request consist of `/{api_prefix}/create/{contenttype}`.
+As response we get an identifier of newly created content type (1 in example above). Then we attach media to content type:
+
+```shell script
+curl -X POST 'https://mydomain.com/api/media/job_applications/1' -H 'Content-Type: multipart/form-data' -F 'cv=@/path/to/file.png'
+```
+
+The create content type request consists of `/{api_prefix}/create/{contenttype}`.
+The attach media to content type request consists of `/{api_prefix}/media/{contenttype}/{contenttype_id}`.
 
 ## TODO
  - [ ] cover code by tests
@@ -132,6 +147,6 @@ The request consist of `/{api_prefix}/create/{contenttype}`.
  - [ ] add using different than JSON body types (yaml, xml) using symfony serializer
  - [ ] add queueing messages and send them by cron task 
  - [ ] add handling rest of contenttypes field types
- - [ ] add file upload
+ - [x] add file upload
  - [ ] add using twig template in email message
  - [ ] move sending email functionality to separate extension
