@@ -4,6 +4,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Mailer;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ReceiverConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\SenderConfig;
+use Swift_Attachment;
 
 class Message
 {
@@ -28,6 +29,11 @@ class Message
      * @var ReceiverConfig|null
      */
     private $receiverConfig;
+
+    /**
+     * @var Swift_Attachment[]
+     */
+    private $attachments = [];
 
     public function __construct($content)
     {
@@ -81,6 +87,14 @@ class Message
     }
 
     /**
+     * @return Swift_Attachment[]
+     */
+    public function getAttachments()
+    {
+        return $this->attachments;
+    }
+
+    /**
      * @param string|null $subject
      * @return Message
      */
@@ -107,6 +121,16 @@ class Message
     public function setReceiverConfig($receiverConfig)
     {
         $this->receiverConfig = $receiverConfig;
+        return $this;
+    }
+
+    /**
+     * @param Swift_Attachment[] $attachments
+     * @return $this
+     */
+    public function setAttachments(array $attachments)
+    {
+        $this->attachments = $attachments;
         return $this;
     }
 }

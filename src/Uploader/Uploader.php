@@ -3,8 +3,10 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Uploader;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentConstraintsFactory;
 use Bolt\Filesystem\FilesystemInterface;
 use Bolt\Filesystem\Manager;
@@ -37,6 +39,7 @@ class Uploader
      *
      * @throws InvalidContentFieldException
      * @throws InvalidContentFieldTypeException
+     * @throws InvalidFileExtensionException
      */
     public function upload($contentType, FileBag $files)
     {
@@ -51,7 +54,9 @@ class Uploader
             $this->checkIfContentHasGivenField($contentType, $fieldName);
             $field = $contentType->getField($fieldName);
             $this->checkIfContentFieldIsFileType($contentType, $field, $fieldName);
-            $path = $this->prepareFileUploadPath($field);
+            $guessedFileExtension = $fileData->guessExtension();
+            $this->checkIfFileExtensionMatchesFieldExtensions($field, $guessedFileExtension);
+            $path = $this->prepareFileUploadPath($field) . '.' . $guessedFileExtension;
             $this->filesystem->write($path, $this->getFileContent($fileData->getPathname()));
             $uploadedFiles->add(new UploadedFile($fieldName, $path));
         }
@@ -111,5 +116,17 @@ class Uploader
     private function getFileContent($fileName)
     {
         return file_get_contents($fileName);
+    }
+
+    /**
+     * @param array $field
+     * @param string $guessedFileExtension
+     * @throws InvalidFileExtensionException
+     */
+    private function checkIfFileExtensionMatchesFieldExtensions(array $field, $guessedFileExtension)
+    {
+        if (isset($field['extensions']) && !in_array($guessedFileExtension, $field['extensions'])) {
+            throw new InvalidFileExtensionException($guessedFileExtension, $field['extensions']);
+        }
     }
 }

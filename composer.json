@@ -29,7 +29,7 @@
     ],
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "version": "0.1.1",
+    "version": "0.1.2",
     "autoload": {
         "psr-4": {
             "Bolt\\Extension\\Kryst3q\\RestApiContactForm\\": "src"

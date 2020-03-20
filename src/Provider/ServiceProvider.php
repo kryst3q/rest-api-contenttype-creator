@@ -98,7 +98,6 @@ class ServiceProvider implements ServiceProviderInterface
                 return new CreateContentAction(
                     $app['storage'],
                     $app[Mailer::class],
-                    $app[Config::class],
                     $app[RequestDataTransformer::class]
                 );
             }
@@ -123,7 +122,11 @@ class ServiceProvider implements ServiceProviderInterface
 
         $app[Mailer::class] = $app->share(
             function ($app) use ($transport) {
-                return new Mailer($app[Config::class], $transport);
+                return new Mailer(
+                    $app[Config::class],
+                    $transport,
+                    $app['filesystem']
+                );
             }
         );
     }
@@ -214,6 +217,7 @@ class ServiceProvider implements ServiceProviderInterface
                 $contentType = new ContentType(
                     $availableContentTypes[$contentTypeName]['fields'],
                     $this->getContentTypeConfigValue($contentTypeName, 'send_email', null) === true,
+                    $this->getContentTypeConfigValue($contentTypeName, 'send_email_after', CreateContentAction::NAME),
                     $this->getContentTypeConfigValue($contentTypeName, 'message_fields', []),
                     $this->getContentTypeConfigValue($contentTypeName, 'implode_glue', "\n"),
                     $this->getContentTypeConfigValue($contentTypeName, 'message_name'),
@@ -297,7 +301,11 @@ class ServiceProvider implements ServiceProviderInterface
     {
         $app[AttachMediaToContentAction::class] = $app->share(
             function ($app) {
-                return new AttachMediaToContentAction($app[ContentRepository::class], $app[Uploader::class]);
+                return new AttachMediaToContentAction(
+                    $app[ContentRepository::class],
+                    $app[Uploader::class],
+                    $app[Mailer::class]
+                );
             }
         );
     }

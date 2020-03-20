@@ -6,6 +6,8 @@ content_type:
     entries:
         # information if given content type has to be send through email after saving
         send_email: false
+        # action after which email message has to be send; possible values: content_create, attach_media; default: content_create
+        #send_email_after: content_create
         # content type fields that will be used as email message
         #message_fields: [title, body]
         # method of concatenating message fields into one message; default "\n"

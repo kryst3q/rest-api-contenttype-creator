@@ -3,6 +3,11 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Mailer;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
+use Bolt\Filesystem\FilesystemInterface;
+use Bolt\Filesystem\Manager;
+use Bolt\Storage\Entity\Content;
 use Swift_Mailer;
 use Swift_Message;
 use Swift_Transport;
@@ -19,19 +24,47 @@ class Mailer
      */
     private $config;
 
+    /**
+     * @var FilesystemInterface
+     */
+    private $filesystem;
+
     public function __construct(
         Config $config,
-        Swift_Transport $transport
+        Swift_Transport $transport,
+        Manager $filesystemManager
     ) {
         $this->mailer = new Swift_Mailer($transport);
         $this->config = $config;
+        $this->filesystem = $filesystemManager->getFilesystem('files');
+    }
+
+    /**
+     * @param Content $content
+     * @param string $action
+     */
+    public function sendEmail(Content $content, string $action)
+    {
+        $contentType = $this->config->getContentType((string) $content->getContenttype());
+
+        if ($contentType->hasToSendEmail() && $contentType->getSendEmailAction() === $action) {
+            $messageChunks = $this->getMessageChunks($content, $contentType);
+            $attachments = $this->getAttachments($content, $contentType);
+            $message = $this->prepareMessage($messageChunks, $attachments, $contentType);
+
+            $success = $this->send($message);
+
+            if ($success) {
+                $content->setStatus('published');
+            }
+        }
     }
 
     /**
      * @param Message $message
      * @return int
      */
-    public function send(Message $message)
+    private function send(Message $message)
     {
         return $this->mailer->send($this->prepareSwiftMailerMessage($message));
     }
@@ -74,6 +107,67 @@ class Mailer
             $receiverConfig->getName()
         );
 
+        foreach ($message->getAttachments() as $attachment) {
+            $swiftMessage->attach($attachment);
+        }
+
         return $swiftMessage;
+    }
+
+    /**
+     * @param string[] $messageChunks
+     * @param \Swift_Attachment[] $attachments
+     * @param ContentType $contentType
+     * @return Message
+     */
+    private function prepareMessage(array $messageChunks, array  $attachments, ContentType $contentType)
+    {
+        $message = Message::fromChunks($messageChunks, $contentType->getImplodeGlue());
+        $message->setAttachments($attachments);
+
+        $messageConfig = $this->config->getMessageConfig($contentType->getMessageConfigName());
+        if ($messageConfig instanceof MessageConfig) {
+            $message->setSubject($messageConfig->getSubject());
+        }
+        $message->setReceiverConfig($this->config->getReceiverConfig($contentType->getReceiverConfigName()));
+        $message->setSenderConfig($this->config->getSenderConfig($contentType->getSenderConfigName()));
+
+        return $message;
+    }
+
+    /**
+     * @param Content $content
+     * @param ContentType $contentType
+     * @return array
+     */
+    private function getMessageChunks(Content $content, ContentType $contentType)
+    {
+        $messageChunks = [];
+
+        foreach ($contentType->getFieldsNames() as $fieldName) {
+            if (in_array($fieldName, $contentType->getMessageFieldsNames())) {
+                $messageChunks[] = $content->get($fieldName);
+            }
+        }
+        return $messageChunks;
+    }
+
+    /**
+     * @param Content $content
+     * @param ContentType $contentType
+     * @return \Swift_Attachment[]
+     */
+    private function getAttachments(Content $content, ContentType $contentType)
+    {
+        $attachments = [];
+
+        foreach ($contentType->getFields() as $fieldName => $fieldData) {
+            if (in_array($fieldName, $contentType->getMessageFieldsNames()) && $fieldData['type'] === 'file') {
+                $path = __DIR__ . '/../../../../../../public/files/' . $content->get($fieldName);
+                $attachments[] = \Swift_Attachment::fromPath($path);
+            }
+        }
+
+        return $attachments;
     }
 }

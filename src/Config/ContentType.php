@@ -46,8 +46,14 @@ class ContentType
     private $receiverConfigName;
 
     /**
+     * @var string
+     */
+    private $sendEmailAction;
+
+    /**
      * @param array $fields
      * @param bool $sendEmail
+     * @param string $sendEmailAction
      * @param string[] $messageFieldsNames
      * @param string|null $implodeGlue
      * @param string|null $messageConfigName
@@ -58,6 +64,7 @@ class ContentType
     public function __construct(
         array $fields,
         $sendEmail = false,
+        $sendEmailAction,
         array $messageFieldsNames = [],
         $implodeGlue = null,
         $messageConfigName = null,
@@ -73,6 +80,7 @@ class ContentType
         $this->emailConfigurationName = $emailConfigurationName;
         $this->senderConfigName = $senderConfigName;
         $this->receiverConfigName = $receiverConfigName;
+        $this->sendEmailAction = $sendEmailAction;
     }
 
     /**
@@ -163,5 +171,13 @@ class ContentType
     public function getField($fieldName)
     {
         return $this->fields[$fieldName];
+    }
+
+    /**
+     * @return string
+     */
+    public function getSendEmailAction()
+    {
+        return $this->sendEmailAction;
     }
 }
