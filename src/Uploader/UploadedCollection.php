@@ -5,15 +5,15 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Uploader;
 use ArrayIterator;
 use IteratorAggregate;
 
-class UploadedFileCollection implements IteratorAggregate
+class UploadedCollection implements IteratorAggregate
 {
     /**
-     * @var UploadedFile[]
+     * @var Uploaded[]
      */
-    private $uploadedFiles;
+    private $uploaded;
 
     /**
-     * @param UploadedFile[] $uploadedFiles
+     * @param Uploaded[] $uploadedFiles
      */
     public function __construct(array $uploadedFiles = [])
     {
@@ -22,9 +22,9 @@ class UploadedFileCollection implements IteratorAggregate
         }
     }
 
-    public function add(UploadedFile $uploadedFile)
+    public function add(Uploaded $uploaded)
     {
-        $this->uploadedFiles[] = $uploadedFile;
+        $this->uploaded[$uploaded->getContentFieldName()][] = $uploaded;
     }
 
     /**
@@ -32,6 +32,6 @@ class UploadedFileCollection implements IteratorAggregate
      */
     public function getIterator()
     {
-        return new ArrayIterator($this->uploadedFiles);
+        return new ArrayIterator($this->uploaded);
     }
 }

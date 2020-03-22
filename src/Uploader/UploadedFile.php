@@ -2,7 +2,7 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Uploader;
 
-class UploadedFile
+class UploadedFile implements Uploaded
 {
     /**
      * @var string

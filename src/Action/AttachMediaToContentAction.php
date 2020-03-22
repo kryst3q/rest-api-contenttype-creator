@@ -7,7 +7,7 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldExcep
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Repository\ContentRepository;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\UploadedFile;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploaded;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploader;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,7 +53,7 @@ class AttachMediaToContentAction
         $content = $this->contentRepository->find($contentType, $contentTypeId);
         $uploadedFiles = $this->uploader->upload($contentType, $request->files);
 
-        /** @var UploadedFile $uploadedFile */
+        /** @var Uploaded $uploadedFile */
         foreach ($uploadedFiles as $uploadedFile) {
             $content->set(
                 $uploadedFile->getContentFieldName(),

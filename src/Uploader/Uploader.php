@@ -3,7 +3,6 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Uploader;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
@@ -35,7 +34,7 @@ class Uploader
      * @param string $contentType
      * @param FileBag $files
      *
-     * @return UploadedFileCollection
+     * @return UploadedCollection
      *
      * @throws InvalidContentFieldException
      * @throws InvalidContentFieldTypeException
@@ -44,24 +43,23 @@ class Uploader
     public function upload($contentType, FileBag $files)
     {
         $contentType = $this->config->getContentType($contentType);
-        $uploadedFiles = new UploadedFileCollection();
+        $uploadedCollection = new UploadedCollection();
 
         /**
          * @var string $fieldName
-         * @var SymfonyUploadedFile $fileData
+         * @var SymfonyUploadedFile|SymfonyUploadedFile[] $fileData
          */
         foreach ($files->all() as $fieldName => $fileData) {
-            $this->checkIfContentHasGivenField($contentType, $fieldName);
-            $field = $contentType->getField($fieldName);
-            $this->checkIfContentFieldIsFileType($contentType, $field, $fieldName);
-            $guessedFileExtension = $fileData->guessExtension();
-            $this->checkIfFileExtensionMatchesFieldExtensions($field, $guessedFileExtension);
-            $path = $this->prepareFileUploadPath($field) . '.' . $guessedFileExtension;
-            $this->filesystem->write($path, $this->getFileContent($fileData->getPathname()));
-            $uploadedFiles->add(new UploadedFile($fieldName, $path));
+            if (is_array($fileData)) {
+                $uploaded = $this->prepareUploadedMultipleFile($contentType, $fieldName, $fileData);
+            } else {
+                $uploaded = $this->prepareUploadedFile($contentType, $fieldName, $fileData);
+            }
+
+            $uploadedCollection->add($uploaded);
         }
 
-        return $uploadedFiles;
+        return $uploadedCollection;
     }
 
     /**
@@ -86,7 +84,10 @@ class Uploader
      */
     private function checkIfContentFieldIsFileType($contentType, array $field, $fieldName)
     {
-        if ($field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE) {
+        if (
+            $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE
+            || $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
+        ) {
             throw new InvalidContentFieldTypeException(
                 $contentType,
                 $fieldName,
@@ -128,5 +129,65 @@ class Uploader
         if (isset($field['extensions']) && !in_array($guessedFileExtension, $field['extensions'])) {
             throw new InvalidFileExtensionException($guessedFileExtension, $field['extensions']);
         }
+    }
+
+    /**
+     * @param string $contentType
+     * @param string $fieldName
+     * @param SymfonyUploadedFile $fileData
+     * @return UploadedFile
+     * @throws InvalidContentFieldException
+     * @throws InvalidContentFieldTypeException
+     * @throws InvalidFileExtensionException
+     */
+    private function uploadFile($contentType, $fieldName, SymfonyUploadedFile $fileData)
+    {
+        $this->checkIfContentHasGivenField($contentType, $fieldName);
+        $field = $contentType->getField($fieldName);
+        $this->checkIfContentFieldIsFileType($contentType, $field, $fieldName);
+        $guessedFileExtension = $fileData->guessExtension();
+        $this->checkIfFileExtensionMatchesFieldExtensions($field, $guessedFileExtension);
+        $path = $this->prepareFileUploadPath($field) . '.' . $guessedFileExtension;
+        $this->filesystem->write($path, $this->getFileContent($fileData->getPathname()));
+
+        return new UploadedFile($fieldName, $path);
+    }
+
+    /**
+     * @param string $contentType
+     * @param string $fieldName
+     * @param SymfonyUploadedFile[] $fileData
+     *
+     * @return UploadedMultipleFile
+     *
+     * @throws InvalidContentFieldException
+     * @throws InvalidContentFieldTypeException
+     * @throws InvalidFileExtensionException
+     */
+    private function prepareUploadedMultipleFile($contentType, $fieldName, $fileData)
+    {
+        $uploaded = new UploadedMultipleFile($fieldName);
+
+        foreach ($fileData as $fileDatum) {
+            $uploaded->addUploadedFile($this->uploadFile($contentType, $fieldName, $fileDatum));
+        }
+
+        return $uploaded;
+    }
+
+    /**
+     * @param string $contentType
+     * @param string $fieldName
+     * @param SymfonyUploadedFile $fileData
+     *
+     * @return UploadedFile
+     *
+     * @throws InvalidContentFieldException
+     * @throws InvalidContentFieldTypeException
+     * @throws InvalidFileExtensionException
+     */
+    private function prepareUploadedFile($contentType, $fieldName, $fileData)
+    {
+        return $this->uploadFile($contentType, $fieldName, $fileData);
     }
 }

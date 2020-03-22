@@ -25,6 +25,7 @@ class ContentConstraintsFactory
     const FIELD_TYPE_SELECT = 'select';
     const FIELD_TYPE_CHECKBOX = 'checkbox';
     const FIELD_TYPE_FILE = 'file';
+    const FIELD_TYPE_FILE_LIST = 'filelist';
 
     /**
      * @var Translator
@@ -45,7 +46,10 @@ class ContentConstraintsFactory
         $constraints = [];
 
         foreach ($contentType->getFields() as $fieldName => $fieldMetadata) {
-            if ($fieldMetadata['type'] === self::FIELD_TYPE_FILE) {
+            if (
+                $fieldMetadata['type'] === self::FIELD_TYPE_FILE
+                || $fieldMetadata['type'] === self::FIELD_TYPE_FILE_LIST
+            ) {
                 continue;
             }
 
