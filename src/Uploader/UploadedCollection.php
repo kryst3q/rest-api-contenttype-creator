@@ -24,7 +24,7 @@ class UploadedCollection implements IteratorAggregate
 
     public function add(Uploaded $uploaded)
     {
-        $this->uploaded[$uploaded->getContentFieldName()][] = $uploaded;
+        $this->uploaded[] = $uploaded;
     }
 
     /**
