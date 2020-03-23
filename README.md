@@ -11,13 +11,15 @@ api_prefix: 'api'
 # list of content types that will be handled by extension
 content_type:
     # content type name identical to one from contenttypes.yml file
-    entries:
+    contact_forms:
         # information if given content type has to be send through email after saving
-        send_email: false
+        send_email: true
         # action after which email message has to be send; possible values: content_create, attach_media; default: content_create
-        #send_email_after: content_create
+        send_email_after: attach_media
         # content type fields that will be used as email message
-        #message_fields: [title, body]
+        message_fields: [ name, message ]
+        # content type file fields that will be used as email attachments
+        message_attachments_fields: [ photo ]
         # method of concatenating message fields into one message; default "\n"
         #implode_glue: \n
         # email configuration that should be used for sending given content type; default will be used if not specified
@@ -88,7 +90,7 @@ contact_forms:
         photo:
             label: Photo
             type: file
-            extensions: [png]
+            extensions: [ png, jpg ]
             upload: contact_forms
 ```
 
@@ -100,7 +102,8 @@ content_type:
     contact_forms:
         send_email: true
         send_email_after: attach_media
-        message_fields: [message, photo]
+        message_fields: [ message ]
+        message_attachments_fields: [ photo ]
 email_configuration:
     default:
         host: some.mail-host.net
@@ -122,7 +125,7 @@ message:
         template: null
 ```
 
-In `content_type` section we add our `contact_forms` contenttype, enabled sending emails on it's creation and selecting that email content should be ceated from contenttype's `message` field. We also enabled sending email after attaching file to content.
+In `content_type` section we add our `contact_forms` contenttype, enabled sending emails on it's creation and selecting that email content should be created from contenttype's `message` field. We also enabled sending email after attaching file to content.
 That's it. Now it's time to create new contact form:
 
 ```shell script
@@ -132,7 +135,7 @@ curl -X POST 'https://mydomain.com/api/create/contact_forms' -d '{"name": "Lorem
 As response we get an identifier of newly created content type (1 in example above). Then we attach media to content type:
 
 ```shell script
-curl -X POST 'https://mydomain.com/api/media/job_applications/1' -H 'Content-Type: multipart/form-data' -F 'cv=@/path/to/file.png'
+curl -X POST 'https://mydomain.com/api/media/job_applications/1' -H 'Content-Type: multipart/form-data' -F 'photo=@/path/to/file.png'
 ```
 
 The create content type request consists of `/{api_prefix}/create/{contenttype}`.
