@@ -87,12 +87,12 @@ class Uploader
     {
         if (
             $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE
-            || $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
+            && $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
         ) {
             throw new InvalidContentFieldTypeException(
                 $contentType->getContentTypeName(),
                 $fieldName,
-                ContentConstraintsFactory::FIELD_TYPE_FILE,
+                ContentConstraintsFactory::FIELD_TYPE_FILE.'/'.ContentConstraintsFactory::FIELD_TYPE_FILE_LIST,
                 $field['type']
             );
         }
