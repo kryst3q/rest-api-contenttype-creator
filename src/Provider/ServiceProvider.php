@@ -220,6 +220,7 @@ class ServiceProvider implements ServiceProviderInterface
                     $this->getContentTypeConfigValue($contentTypeName, 'send_email', null) === true,
                     $this->getContentTypeConfigValue($contentTypeName, 'send_email_after', CreateContentAction::NAME),
                     $this->getContentTypeConfigValue($contentTypeName, 'message_fields', []),
+                    $this->getContentTypeConfigValue($contentTypeName, 'message_attachments_fields', []),
                     $this->getContentTypeConfigValue($contentTypeName, 'implode_glue', "\n"),
                     $this->getContentTypeConfigValue($contentTypeName, 'message_name'),
                     $this->getContentTypeConfigValue($contentTypeName, 'email_configuration_name'),

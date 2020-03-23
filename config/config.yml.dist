@@ -10,6 +10,8 @@ content_type:
         #send_email_after: content_create
         # content type fields that will be used as email message
         #message_fields: [title, body]
+        # content type file fields that will be used as email attachments
+        # message_attachments_fields: []
         # method of concatenating message fields into one message; default "\n"
         #implode_glue: \n
         # email configuration that should be used for sending given content type; default will be used if not specified

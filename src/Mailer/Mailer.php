@@ -5,6 +5,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentConstraintsFactory;
 use Bolt\Filesystem\FilesystemInterface;
 use Bolt\Filesystem\Manager;
 use Bolt\Storage\Entity\Content;
@@ -160,11 +161,28 @@ class Mailer
     private function getAttachments(Content $content, ContentType $contentType)
     {
         $attachments = [];
+        $filesPath = __DIR__ . '/../../../../../../public/files/';
+        $validFileTypes = [
+            ContentConstraintsFactory::FIELD_TYPE_FILE,
+            ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
+        ];
 
         foreach ($contentType->getFields() as $fieldName => $fieldData) {
-            if (in_array($fieldName, $contentType->getMessageFieldsNames()) && $fieldData['type'] === 'file') {
-                $path = __DIR__ . '/../../../../../../public/files/' . $content->get($fieldName);
-                $attachments[] = \Swift_Attachment::fromPath($path);
+            if (
+                in_array($fieldName, $contentType->getMessageAttachmentsNames())
+                && in_array($fieldData['type'], $validFileTypes)
+            ) {
+                $fieldValue = $content->get($fieldName);
+
+                if (is_array($fieldValue)) {
+                    foreach ($fieldValue as $item) {
+                        $path = $filesPath . $item['filename'];
+                        $attachments[] = \Swift_Attachment::fromPath($path);
+                    }
+                } else {
+                    $path = $filesPath . $fieldValue;
+                    $attachments[] = \Swift_Attachment::fromPath($path);
+                }
             }
         }
 

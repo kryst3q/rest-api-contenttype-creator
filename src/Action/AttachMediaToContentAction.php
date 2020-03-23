@@ -3,6 +3,7 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Action;
 
 use Bolt\Exception\InvalidRepositoryException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\ContentNotFoundException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
@@ -51,6 +52,11 @@ class AttachMediaToContentAction
     public function handle(Request $request, $contentType, $contentTypeId)
     {
         $content = $this->contentRepository->find($contentType, $contentTypeId);
+
+        if ($content === false) {
+            throw new ContentNotFoundException($contentTypeId);
+        }
+
         $uploadedFiles = $this->uploader->upload($contentType, $request->files);
 
         /** @var Uploaded $uploadedFile */

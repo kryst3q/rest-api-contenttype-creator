@@ -10,3 +10,4 @@ Field "{fieldName}" of content type "{contentType}" is of type {actualType} but 
 This field was not expected.: 'To pole nie było oczekiwane.'
 This field is missing.: 'Brakuje tego pola.'
 Extension {invalidFileExtension} is not accepted. Valid file extensions are {validFileExtensions}.: 'Rozszerzenie {invalidFileExtension} nie jest obsługiwane. Akceptowanymi rozszerzeniami są {validFileExtensions}.'
+Content type with id {contentId} not found.: 'Typa zawartości o id {contentId} nie został odnaleziony.'

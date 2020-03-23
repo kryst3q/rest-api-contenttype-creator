@@ -56,11 +56,17 @@ class ContentType
     private $contentTypeName;
 
     /**
+     * @var string[]
+     */
+    private $messageAttachmentsNames;
+
+    /**
      * @param string $contentTypeName
      * @param array $fields
      * @param bool $sendEmail
      * @param string $sendEmailAction
      * @param string[] $messageFieldsNames
+     * @param string[] $messageAttachmentsNames
      * @param string|null $implodeGlue
      * @param string|null $messageConfigName
      * @param string|null $emailConfigurationName
@@ -73,6 +79,7 @@ class ContentType
         $sendEmail = false,
         $sendEmailAction,
         array $messageFieldsNames = [],
+        array $messageAttachmentsNames = [],
         $implodeGlue = null,
         $messageConfigName = null,
         $emailConfigurationName = null,
@@ -89,6 +96,7 @@ class ContentType
         $this->receiverConfigName = $receiverConfigName;
         $this->sendEmailAction = $sendEmailAction;
         $this->contentTypeName = $contentTypeName;
+        $this->messageAttachmentsNames = $messageAttachmentsNames;
     }
 
     /**
@@ -195,5 +203,13 @@ class ContentType
     public function getContentTypeName()
     {
         return $this->contentTypeName;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getMessageAttachmentsNames()
+    {
+        return $this->messageAttachmentsNames;
     }
 }
