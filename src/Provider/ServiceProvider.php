@@ -215,6 +215,7 @@ class ServiceProvider implements ServiceProviderInterface
         foreach (array_keys($this->config['content_type']) as $contentTypeName) {
             if (in_array($contentTypeName, $availableContentTypesNames)) {
                 $contentType = new ContentType(
+                    $contentTypeName,
                     $availableContentTypes[$contentTypeName]['fields'],
                     $this->getContentTypeConfigValue($contentTypeName, 'send_email', null) === true,
                     $this->getContentTypeConfigValue($contentTypeName, 'send_email_after', CreateContentAction::NAME),

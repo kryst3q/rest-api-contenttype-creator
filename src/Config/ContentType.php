@@ -51,6 +51,12 @@ class ContentType
     private $sendEmailAction;
 
     /**
+     * @var string
+     */
+    private $contentTypeName;
+
+    /**
+     * @param string $contentTypeName
      * @param array $fields
      * @param bool $sendEmail
      * @param string $sendEmailAction
@@ -62,6 +68,7 @@ class ContentType
      * @param string|null $receiverConfigName
      */
     public function __construct(
+        $contentTypeName,
         array $fields,
         $sendEmail = false,
         $sendEmailAction,
@@ -81,6 +88,7 @@ class ContentType
         $this->senderConfigName = $senderConfigName;
         $this->receiverConfigName = $receiverConfigName;
         $this->sendEmailAction = $sendEmailAction;
+        $this->contentTypeName = $contentTypeName;
     }
 
     /**
@@ -179,5 +187,13 @@ class ContentType
     public function getSendEmailAction()
     {
         return $this->sendEmailAction;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContentTypeName()
+    {
+        return $this->contentTypeName;
     }
 }

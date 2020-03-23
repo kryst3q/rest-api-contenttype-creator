@@ -3,6 +3,7 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Uploader;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
@@ -63,7 +64,7 @@ class Uploader
     }
 
     /**
-     * @param string $contentType
+     * @param ContentType $contentType
      * @param string $fieldName
      *
      * @throws InvalidContentFieldException
@@ -71,12 +72,12 @@ class Uploader
     private function checkIfContentHasGivenField($contentType, $fieldName)
     {
         if (!$contentType->hasField($fieldName)) {
-            throw new InvalidContentFieldException($contentType, $fieldName);
+            throw new InvalidContentFieldException($contentType->getContentTypeName(), $fieldName);
         }
     }
 
     /**
-     * @param string $contentType
+     * @param ContentType $contentType
      * @param array $field
      * @param string $fieldName
      *
@@ -89,7 +90,7 @@ class Uploader
             || $field['type'] !== ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
         ) {
             throw new InvalidContentFieldTypeException(
-                $contentType,
+                $contentType->getContentTypeName(),
                 $fieldName,
                 ContentConstraintsFactory::FIELD_TYPE_FILE,
                 $field['type']
@@ -132,7 +133,7 @@ class Uploader
     }
 
     /**
-     * @param string $contentType
+     * @param ContentType $contentType
      * @param string $fieldName
      * @param SymfonyUploadedFile $fileData
      * @return UploadedFile
@@ -176,7 +177,7 @@ class Uploader
     }
 
     /**
-     * @param string $contentType
+     * @param ContentType $contentType
      * @param string $fieldName
      * @param SymfonyUploadedFile $fileData
      *
