@@ -161,7 +161,6 @@ class Mailer
     private function getAttachments(Content $content, ContentType $contentType)
     {
         $attachments = [];
-        $filesPath = __DIR__ . '/../../../../../../public/files/';
         $validFileTypes = [
             ContentConstraintsFactory::FIELD_TYPE_FILE,
             ContentConstraintsFactory::FIELD_TYPE_FILE_LIST
@@ -176,16 +175,33 @@ class Mailer
 
                 if (is_array($fieldValue)) {
                     foreach ($fieldValue as $item) {
-                        $path = $filesPath . $item['filename'];
-                        $attachments[] = \Swift_Attachment::fromPath($path);
+                        $attachments[] = $this->prepareSwiftAttachment($item['filename']);
                     }
                 } else {
-                    $path = $filesPath . $fieldValue;
-                    $attachments[] = \Swift_Attachment::fromPath($path);
+                    $attachments[] = $this->prepareSwiftAttachment($fieldValue);
                 }
             }
         }
 
         return $attachments;
+    }
+
+    /**
+     * @param string $filePath
+     * @return Swift_Attachment
+     */
+    private function prepareSwiftAttachment($filePath)
+    {
+        return \Swift_Attachment::newInstance(
+            $this->filesystem->read($filePath),
+            substr(
+                $filePath,
+                strrpos($filePath, '/')
+            ),
+            substr(
+                $filePath,
+                strrpos($filePath, '.')
+            )
+        );
     }
 }
