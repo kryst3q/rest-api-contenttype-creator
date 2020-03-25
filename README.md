@@ -8,6 +8,9 @@ Bolt 3 extension allowing contenttypes creation using REST API request. It also 
 ```yaml
 # prefix of this extensions rest api routings
 api_prefix: 'api'
+# cross-origin resource sharing
+cors:
+    allow-origin: '*'
 # list of content types that will be handled by extension
 content_type:
     # content type name identical to one from contenttypes.yml file
