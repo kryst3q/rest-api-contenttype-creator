@@ -36,6 +36,11 @@ class Config
      */
     private $contentTypes;
 
+    /**
+     * @var CorsConfig
+     */
+    private $corsConfig;
+
     public function __construct($apiPrefix)
     {
         $this->apiPrefix = $apiPrefix;
@@ -176,5 +181,18 @@ class Config
         }
 
         return $this->emailConfigs[$emailConfigName];
+    }
+
+    public function setCorsConfig(CorsConfig $corsConfig)
+    {
+        $this->corsConfig = $corsConfig;
+    }
+
+    /**
+     * @return CorsConfig
+     */
+    public function getCorsConfig()
+    {
+        return $this->corsConfig;
     }
 }

@@ -4,6 +4,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\SendCorsOptionsResponseAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContentController;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
@@ -33,13 +34,14 @@ class RestApiContactFormExtension extends SimpleExtension
     {
         /** @var Config $config */
         $config = $this->get(Config::class);
-        /** @var CreateContentAction $incomingContentTypeFormAction */
-        $incomingContentTypeFormAction = $this->get(CreateContentAction::class);
-        /** @var AttachMediaToContentAction $attachMediaToContentAction */
-        $attachMediaToContentAction = $this->get(AttachMediaToContentAction::class);
+        $contentController = new ContentController(
+            $this->get(CreateContentAction::class),
+            $this->get(AttachMediaToContentAction::class),
+            $this->get(SendCorsOptionsResponseAction::class)
+        );
 
         return  [
-            $config->getApiPrefix() => new ContentController($incomingContentTypeFormAction, $attachMediaToContentAction)
+            $config->getApiPrefix() => $contentController
         ];
     }
 

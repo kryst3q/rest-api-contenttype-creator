@@ -53,7 +53,7 @@ class CreateContentAction
      * @throws InvalidArgumentException
      * @throws InvalidBodyContentException
      */
-    public function handle($contentType, Request $request)
+    public function perform($contentType, Request $request)
     {
         $content = $this->requestDataTransformer->transform($contentType, $request);
         $repository = $this->storage->getRepository($content->getContenttype());

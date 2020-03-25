@@ -5,6 +5,7 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend;
 use Bolt\Exception\InvalidRepositoryException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\SendCorsOptionsResponseAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidArgumentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidBodyContentException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
@@ -16,6 +17,7 @@ use Silex\ControllerCollection;
 use Silex\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ContentController implements ControllerProviderInterface
 {
@@ -29,12 +31,19 @@ class ContentController implements ControllerProviderInterface
      */
     private $attachMediaToContentAction;
 
+    /**
+     * @var SendCorsOptionsResponseAction
+     */
+    private $sendCorsOptionsResponseAction;
+
     public function __construct(
         CreateContentAction $incomingContentTypeFormAction,
-        AttachMediaToContentAction $attachMediaToContentAction
+        AttachMediaToContentAction $attachMediaToContentAction,
+        SendCorsOptionsResponseAction $sendCorsOptionsResponseAction
     ) {
         $this->createContentAction = $incomingContentTypeFormAction;
         $this->attachMediaToContentAction = $attachMediaToContentAction;
+        $this->sendCorsOptionsResponseAction = $sendCorsOptionsResponseAction;
     }
 
     /**
@@ -47,6 +56,8 @@ class ContentController implements ControllerProviderInterface
          */
         $controllerCollection = $app['controllers_factory'];
 
+        $controllerCollection->options('/create/{contentType}', [$this, 'sendCorsOptionsResponse']);
+        $controllerCollection->options('/media/{contentType}/{contentTypeId}', [$this, 'sendCorsOptionsResponse']);
         $controllerCollection->post('/create/{contentType}', [$this, 'createContent']);
         $controllerCollection->post('/media/{contentType}/{contentTypeId}', [$this, 'attachMediaToContent']);
 
@@ -67,7 +78,7 @@ class ContentController implements ControllerProviderInterface
      */
     public function createContent(Application $app, Request $request, $contentType)
     {
-        return $this->createContentAction->handle($contentType, $request);
+        return $this->createContentAction->perform($contentType, $request);
     }
 
     /**
@@ -84,6 +95,14 @@ class ContentController implements ControllerProviderInterface
      */
     public function attachMediaToContent(Application $app, Request $request, $contentType, $contentTypeId)
     {
-        return $this->attachMediaToContentAction->handle($request, $contentType, $contentTypeId);
+        return $this->attachMediaToContentAction->perform($request, $contentType, $contentTypeId);
+    }
+
+    /**
+     * @return Response
+     */
+    public function sendCorsOptionsResponse()
+    {
+        return $this->sendCorsOptionsResponseAction->perform();
     }
 }

@@ -49,7 +49,7 @@ class AttachMediaToContentAction
      * @throws InvalidContentFieldException
      * @throws InvalidContentFieldTypeException
      */
-    public function handle(Request $request, $contentType, $contentTypeId)
+    public function perform(Request $request, $contentType, $contentTypeId)
     {
         $content = $this->contentRepository->find($contentType, $contentTypeId);
 

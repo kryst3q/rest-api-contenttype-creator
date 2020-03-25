@@ -4,8 +4,10 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Provider;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Action\SendCorsOptionsResponseAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\CorsConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\EmailConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ReceiverConfig;
@@ -46,6 +48,7 @@ class ServiceProvider implements ServiceProviderInterface
         $this->registerRequestDataTransformer($app);
         $this->registerContentRepository($app);
         $this->registerUploader($app);
+        $this->registerSendCorsOptionsResponseAction($app);
         $this->registerCreateContentAction($app);
         $this->registerAttachMediaToContentAction($app);
     }
@@ -57,12 +60,10 @@ class ServiceProvider implements ServiceProviderInterface
     {
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerConfig(Application $app)
     {
         $config = new Config($this->config['api_prefix']);
+        $this->prepareCorsConfig($config);
         $this->prepareEmailConfigs($config);
         $this->prepareSenderConfigs($config);
         $this->prepareReceiverConfigs($config);
@@ -76,9 +77,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerExceptionListener(Application $app)
     {
         $app[ExceptionListener::class] = $app->share(
@@ -88,9 +86,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerCreateContentAction(Application $app)
     {
         $app[CreateContentAction::class] = $app->share(
@@ -104,9 +99,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerMailer(Application $app)
     {
         /** @var EmailConfig $emailConfig */
@@ -131,9 +123,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Config $config
-     */
     private function prepareEmailConfigs(Config $config)
     {
         foreach ($this->config['email_configuration'] as $name => $data) {
@@ -148,9 +137,6 @@ class ServiceProvider implements ServiceProviderInterface
         }
     }
 
-    /**
-     * @param Config $config
-     */
     private function prepareSenderConfigs(Config $config)
     {
         foreach ($this->config['sender'] as $name => $data) {
@@ -162,9 +148,6 @@ class ServiceProvider implements ServiceProviderInterface
         }
     }
 
-    /**
-     * @param Config $config
-     */
     private function prepareReceiverConfigs(Config $config)
     {
         foreach ($this->config['receiver'] as $name => $data) {
@@ -176,9 +159,6 @@ class ServiceProvider implements ServiceProviderInterface
         }
     }
 
-    /**
-     * @param Config $config
-     */
     private function prepareMessageConfigs(Config $config)
     {
         foreach ($this->config['message'] as $name => $data) {
@@ -203,10 +183,6 @@ class ServiceProvider implements ServiceProviderInterface
             : $defaultValue;
     }
 
-    /**
-     * @param Application $app
-     * @param Config $config
-     */
     private function prepareContentTypes(Application $app, Config $config)
     {
         $availableContentTypes = $app['config']->get('contenttypes');
@@ -232,9 +208,6 @@ class ServiceProvider implements ServiceProviderInterface
         }
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerRequestDataTransformer(Application $app)
     {
         $app[RequestDataTransformer::class] = $app->share(
@@ -248,9 +221,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerContentTypeValidatorConstraintsFactory(Application $app)
     {
         $app[ContentConstraintsFactory::class] = $app->share(
@@ -260,9 +230,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerTranslator(Application $app)
     {
         $app[Translator::class] = $app->share(
@@ -272,9 +239,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerContentRepository(Application $app)
     {
         $app[ContentRepository::class] = $app->share(
@@ -284,9 +248,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerUploader(Application $app)
     {
         $app[Uploader::class] = $app->share(
@@ -296,9 +257,6 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    /**
-     * @param Application $app
-     */
     private function registerAttachMediaToContentAction(Application $app)
     {
         $app[AttachMediaToContentAction::class] = $app->share(
@@ -308,6 +266,23 @@ class ServiceProvider implements ServiceProviderInterface
                     $app[Uploader::class],
                     $app[Mailer::class]
                 );
+            }
+        );
+    }
+
+    private function prepareCorsConfig(Config $config)
+    {
+        $config->setCorsConfig(new CorsConfig($this->config['cors']['allow-origin']));
+    }
+
+    private function registerSendCorsOptionsResponseAction(Application $app)
+    {
+        $app[SendCorsOptionsResponseAction::class] = $app->share(
+            function ($app) {
+                /** @var Config $config */
+                $config = $app[Config::class];
+                
+                return new SendCorsOptionsResponseAction($config->getCorsConfig());
             }
         );
     }
