@@ -8,12 +8,12 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\ContentNotFoundException
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Http\Response;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Repository\ContentRepository;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploaded;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploader;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AttachMediaToContentAction
 {
@@ -84,6 +84,6 @@ class AttachMediaToContentAction
         $this->contentRepository->update($content);
         $this->mailer->sendEmail($content, self::NAME);
 
-        return new Response($this->config, null, Response::HTTP_NO_CONTENT);
+        return new Response(null, Response::HTTP_NO_CONTENT);
     }
 }

@@ -4,13 +4,12 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\SendCorsOptionsResponseAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContentController;
-use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Provider\ServiceProvider;
 use Bolt\Extension\SimpleExtension;
+use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -34,10 +33,10 @@ class RestApiContactFormExtension extends SimpleExtension
     {
         /** @var Config $config */
         $config = $this->get(Config::class);
+
         $contentController = new ContentController(
             $this->get(CreateContentAction::class),
-            $this->get(AttachMediaToContentAction::class),
-            $this->get(SendCorsOptionsResponseAction::class)
+            $this->get(AttachMediaToContentAction::class)
         );
 
         return  [
@@ -53,6 +52,7 @@ class RestApiContactFormExtension extends SimpleExtension
         $parentEvents = parent::getSubscribedEvents();
 
         $extensionEvents = [
+            KernelEvents::REQUEST => ['onKernelRequest', 10000],
             KernelEvents::EXCEPTION => ['onError', 515],
         ];
 
@@ -65,6 +65,11 @@ class RestApiContactFormExtension extends SimpleExtension
         $exceptionListener = $this->get(ExceptionListener::class);
         $response = $exceptionListener->handle($event->getException());
         $event->setResponse($response);
+    }
+
+    public function onKernelRequest(GetResponseEvent $event)
+    {
+
     }
 
     /**

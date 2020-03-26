@@ -4,16 +4,15 @@ namespace Bolt\Extension\Kryst3q\RestApiContactForm\Provider;
 
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Action\SendCorsOptionsResponseAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ContentType;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Config\CorsConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\EmailConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\MessageConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\ReceiverConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\SenderConfig;
 use Bolt\Extension\Kryst3q\RestApiContactForm\DataTransformer\RequestDataTransformer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Factory\ContentConstraintsFactory;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\CorsListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Repository\ContentRepository;
@@ -42,13 +41,13 @@ class ServiceProvider implements ServiceProviderInterface
     {
         $this->registerConfig($app);
         $this->registerTranslator($app);
+        $this->registerCorsListener($app);
         $this->registerExceptionListener($app);
         $this->registerMailer($app);
         $this->registerContentTypeValidatorConstraintsFactory($app);
         $this->registerRequestDataTransformer($app);
         $this->registerContentRepository($app);
         $this->registerUploader($app);
-        $this->registerSendCorsOptionsResponseAction($app);
         $this->registerCreateContentAction($app);
         $this->registerAttachMediaToContentAction($app);
     }
@@ -63,7 +62,6 @@ class ServiceProvider implements ServiceProviderInterface
     private function registerConfig(Application $app)
     {
         $config = new Config($this->config['api_prefix']);
-        $this->prepareCorsConfig($config);
         $this->prepareEmailConfigs($config);
         $this->prepareSenderConfigs($config);
         $this->prepareReceiverConfigs($config);
@@ -272,20 +270,15 @@ class ServiceProvider implements ServiceProviderInterface
         );
     }
 
-    private function prepareCorsConfig(Config $config)
+    private function registerCorsListener(Application $app)
     {
-        $config->setCorsConfig(new CorsConfig(
-            $this->config['cors']['allow-origin'],
-            '*',
-            'POST'
-        ));
-    }
-
-    private function registerSendCorsOptionsResponseAction(Application $app)
-    {
-        $app[SendCorsOptionsResponseAction::class] = $app->share(
+        $app[CorsListener::class] = $app->share(
             function ($app) {
-                return new SendCorsOptionsResponseAction($app[Config::class]);
+                return new CorsListener(
+                    $app['dispatcher'],
+                    ['^/' => []],
+                    $this->config['cors']
+                );
             }
         );
     }
