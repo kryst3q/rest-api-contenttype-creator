@@ -6,6 +6,7 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Action\AttachMediaToContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Action\CreateContentAction;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Controller\Frontend\ContentController;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\CorsListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Listener\ExceptionListener;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Provider\ServiceProvider;
 use Bolt\Extension\SimpleExtension;
@@ -69,7 +70,9 @@ class RestApiContactFormExtension extends SimpleExtension
 
     public function onKernelRequest(GetResponseEvent $event)
     {
-
+        /** @var CorsListener $corsListener */
+        $corsListener = $this->get(CorsListener::class);
+        $corsListener->onKernelRequest($event);
     }
 
     /**
