@@ -12,7 +12,6 @@ use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldExcep
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\UnsuccessfulContentTypeSaveException;
-use Bolt\Storage\Entity\Content;
 use Silex\Application;
 use Silex\ControllerCollection;
 use Silex\ControllerProviderInterface;

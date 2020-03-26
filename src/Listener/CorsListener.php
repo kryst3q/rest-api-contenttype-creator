@@ -170,7 +170,12 @@ class CorsListener
     {
         // check origin
         $origin = $request->headers->get('Origin');
-        if ($options['allow_origin'] === true || in_array($origin, $options['allow_origin'])) {
+
+        if (
+            $options['allow_origin'] === true
+            || in_array($origin, $options['allow_origin'])
+            || in_array('*', $options['allow_origin'])
+        ) {
             return true;
         }
 

@@ -3,7 +3,6 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Action;
 
 use Bolt\Exception\InvalidRepositoryException;
-use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\ContentNotFoundException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
@@ -34,21 +33,14 @@ class AttachMediaToContentAction
      */
     private $mailer;
 
-    /**
-     * @var Config
-     */
-    private $config;
-
     public function __construct(
         ContentRepository $contentRepository,
         Uploader $uploader,
-        Mailer $mailer,
-        Config $config
+        Mailer $mailer
     ) {
         $this->contentRepository = $contentRepository;
         $this->uploader = $uploader;
         $this->mailer = $mailer;
-        $this->config = $config;
     }
 
     /**
@@ -62,6 +54,7 @@ class AttachMediaToContentAction
      * @throws InvalidContentFieldException
      * @throws InvalidContentFieldTypeException
      * @throws InvalidFileExtensionException
+     * @throws InvalidRepositoryException
      */
     public function perform(Request $request, $contentType, $contentTypeId)
     {

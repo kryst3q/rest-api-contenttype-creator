@@ -91,8 +91,7 @@ class ServiceProvider implements ServiceProviderInterface
                 return new CreateContentAction(
                     $app['storage'],
                     $app[Mailer::class],
-                    $app[RequestDataTransformer::class],
-                    $app[Config::class]
+                    $app[RequestDataTransformer::class]
                 );
             }
         );
@@ -263,8 +262,7 @@ class ServiceProvider implements ServiceProviderInterface
                 return new AttachMediaToContentAction(
                     $app[ContentRepository::class],
                     $app[Uploader::class],
-                    $app[Mailer::class],
-                    $app[Config::class]
+                    $app[Mailer::class]
                 );
             }
         );
@@ -274,9 +272,15 @@ class ServiceProvider implements ServiceProviderInterface
     {
         $app[CorsListener::class] = $app->share(
             function ($app) {
+                /** @var Config $config */
+                $config = $app[Config::class];
+                $paths = [
+                    '^'.$config->getApiPrefix().'/' => []
+                ];
+
                 return new CorsListener(
                     $app['dispatcher'],
-                    ['^/' => []],
+                    $paths,
                     $this->config['cors']
                 );
             }
