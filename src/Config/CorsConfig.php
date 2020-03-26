@@ -7,21 +7,42 @@ class CorsConfig
     /**
      * @var string
      */
-    private $allowOrigin;
+    private $allowedOrigin;
 
     /**
-     * @param string $allowOrigin
+     * @var string
      */
-    public function __construct($allowOrigin)
-    {
-        $this->allowOrigin = $allowOrigin;
+    private $allowedHeaders;
+
+    /**
+     * @var string
+     */
+    private $allowedMethods;
+
+    /**
+     * @param string $allowedOrigin
+     * @param string $allowedHeaders
+     * @param string $allowedMethods
+     */
+    public function __construct(
+        $allowedOrigin = '*',
+        $allowedHeaders = '*',
+        $allowedMethods = '*'
+    ) {
+        $this->allowedOrigin = $allowedOrigin;
+        $this->allowedHeaders = $allowedHeaders;
+        $this->allowedMethods = $allowedMethods;
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getAllowedOrigin()
+    public function getHeaders()
     {
-        return $this->allowOrigin;
+        return [
+            'Access-Control-Allow-Origin' => $this->allowedOrigin,
+            'Access-Control-Allow-Headers' => $this->allowedHeaders,
+            'Access-Control-Allow-Methods' => $this->allowedMethods
+        ];
     }
 }

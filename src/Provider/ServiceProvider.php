@@ -93,7 +93,8 @@ class ServiceProvider implements ServiceProviderInterface
                 return new CreateContentAction(
                     $app['storage'],
                     $app[Mailer::class],
-                    $app[RequestDataTransformer::class]
+                    $app[RequestDataTransformer::class],
+                    $app[Config::class]
                 );
             }
         );
@@ -264,7 +265,8 @@ class ServiceProvider implements ServiceProviderInterface
                 return new AttachMediaToContentAction(
                     $app[ContentRepository::class],
                     $app[Uploader::class],
-                    $app[Mailer::class]
+                    $app[Mailer::class],
+                    $app[Config::class]
                 );
             }
         );
@@ -272,17 +274,18 @@ class ServiceProvider implements ServiceProviderInterface
 
     private function prepareCorsConfig(Config $config)
     {
-        $config->setCorsConfig(new CorsConfig($this->config['cors']['allow-origin']));
+        $config->setCorsConfig(new CorsConfig(
+            $this->config['cors']['allow-origin'],
+            '*',
+            'POST'
+        ));
     }
 
     private function registerSendCorsOptionsResponseAction(Application $app)
     {
         $app[SendCorsOptionsResponseAction::class] = $app->share(
             function ($app) {
-                /** @var Config $config */
-                $config = $app[Config::class];
-                
-                return new SendCorsOptionsResponseAction($config->getCorsConfig());
+                return new SendCorsOptionsResponseAction($app[Config::class]);
             }
         );
     }

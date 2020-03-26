@@ -2,40 +2,26 @@
 
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Action;
 
-use Bolt\Extension\Kryst3q\RestApiContactForm\Config\CorsConfig;
-use Symfony\Component\HttpFoundation\Response;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Http\Response;
 
 class SendCorsOptionsResponseAction
 {
     /**
-     * @var CorsConfig
+     * @var Config
      */
-    private $corsConfig;
+    private $config;
 
-    public function __construct(CorsConfig $corsConfig)
+    public function __construct(Config $config)
     {
-        $this->corsConfig = $corsConfig;
+        $this->config = $config;
     }
 
+    /**
+     * @return Response
+     */
     public function perform()
     {
-        $response = new Response();
-
-        $response->headers->set(
-            'Access-Control-Allow-Origin',
-            $this->corsConfig->getAllowedOrigin()
-        );
-
-        $response->headers->set(
-            'Access-Control-Allow-Headers',
-            '*'
-        );
-
-        $response->headers->set(
-            'Access-Control-Allow-Methods',
-            'POST'
-        );
-
-        return $response;
+        return new Response($this->config);
     }
 }

@@ -3,16 +3,17 @@
 namespace Bolt\Extension\Kryst3q\RestApiContactForm\Action;
 
 use Bolt\Exception\InvalidRepositoryException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Config\Config;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\ContentNotFoundException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldException;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidContentFieldTypeException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Exception\InvalidFileExtensionException;
+use Bolt\Extension\Kryst3q\RestApiContactForm\Http\Response;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Mailer\Mailer;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Repository\ContentRepository;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploaded;
 use Bolt\Extension\Kryst3q\RestApiContactForm\Uploader\Uploader;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class AttachMediaToContentAction
 {
@@ -33,21 +34,34 @@ class AttachMediaToContentAction
      */
     private $mailer;
 
-    public function __construct(ContentRepository $contentRepository, Uploader $uploader, Mailer $mailer)
-    {
+    /**
+     * @var Config
+     */
+    private $config;
+
+    public function __construct(
+        ContentRepository $contentRepository,
+        Uploader $uploader,
+        Mailer $mailer,
+        Config $config
+    ) {
         $this->contentRepository = $contentRepository;
         $this->uploader = $uploader;
         $this->mailer = $mailer;
+        $this->config = $config;
     }
 
     /**
      * @param Request $request
      * @param string $contentType
      * @param int $contentTypeId
-     * @return JsonResponse
-     * @throws InvalidRepositoryException
+     *
+     * @return Response
+     *
+     * @throws ContentNotFoundException
      * @throws InvalidContentFieldException
      * @throws InvalidContentFieldTypeException
+     * @throws InvalidFileExtensionException
      */
     public function perform(Request $request, $contentType, $contentTypeId)
     {
@@ -70,6 +84,6 @@ class AttachMediaToContentAction
         $this->contentRepository->update($content);
         $this->mailer->sendEmail($content, self::NAME);
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new Response($this->config, null, Response::HTTP_NO_CONTENT);
     }
 }
